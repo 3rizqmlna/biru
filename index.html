@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>adalahpokoknya</title>
+
+<!-- Favicon: inisial N berbentuk bulan -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23101E33'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='serif' font-size='18' font-weight='700' fill='%23F6CB7A'%3EN%3C/text%3E%3C/svg%3E">
+
+<!-- Meta SEO & preview link (WhatsApp, Instagram, dll) -->
+<meta name="description" content="Sebuah taman digital yang dibuat dengan sepenuh hati — khusus untukmu, Naffa.">
+<meta property="og:title" content="Taman Bulan Naffa ✦">
+<meta property="og:description" content="Sebuah taman digital yang dibuat dengan sepenuh hati — khusus untukmu, Naffa.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/preview/og-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Taman Bulan Naffa ✦">
+<meta name="twitter:description" content="Sebuah taman digital yang dibuat dengan sepenuh hati — khusus untukmu, Naffa.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Josefin+Sans:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="js/firebase-init.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<script src="js/lockgate-init.js"></script>
+
+<body>
+<!-- LOCK GATE -->
+<div id="lockgate">
+  <canvas id="lk-canvas"></canvas>
+  <div class="lk-card">
+    <div class="lk-shimmer"></div>
+    <div class="lk-corner tl"></div><div class="lk-corner tr"></div><div class="lk-corner bl"></div><div class="lk-corner br"></div>
+    <div class="lk-icon">✦</div>
+    <div class="lk-em" id="lk-emletter" tabindex="0" role="button" aria-label="Buka dengan kata sandi">N</div>
+    <div class="lk-sub">Taman Bulan · Naffa</div>
+    <div class="lk-divider"></div>
+    <p class="lk-msg">Taman ini masih tertutup rapat, menunggu hari yang sudah ditentukan untuk terbuka.</p>
+    <div class="lk-progress" aria-hidden="true">
+      <div class="lk-progress-track"><div class="lk-progress-fill" id="lk-progress-fill"></div><div class="lk-progress-moon" id="lk-progress-moon">🌙</div></div>
+      <div class="lk-progress-label" id="lk-progress-label">Menuju Dekade Kedua</div>
+    </div>
+    <div class="lk-cd-label">✦ hitung mundur menuju hari taman ini terbuka ✦</div>
+    <div class="lk-grid">
+      <div class="lk-block"><span class="lk-val" id="lk-d">00</span><span class="lk-lbl">HARI</span></div>
+      <div class="lk-sep">:</div>
+      <div class="lk-block"><span class="lk-val" id="lk-h">00</span><span class="lk-lbl">JAM</span></div>
+      <div class="lk-sep">:</div>
+      <div class="lk-block"><span class="lk-val" id="lk-m">00</span><span class="lk-lbl">MENIT</span></div>
+      <div class="lk-sep">:</div>
+      <div class="lk-block"><span class="lk-val" id="lk-s">00</span><span class="lk-lbl">DETIK</span></div>
+    </div>
+    <div class="lk-pwwrap" id="lk-pwwrap">
+      <input type="password" id="lk-pwinput" class="lk-pwinput" placeholder="• • • • • • • •" inputmode="numeric" autocomplete="off">
+      <div class="lk-pwerr" id="lk-pwerr">Kata sandi salah.</div>
+    </div>
+  </div>
+  <div class="lk-milestone" id="lk-milestone"></div>
+</div>
+<div id="audio-tap-hint">♪ &nbsp;tap di mana saja untuk memulai musik</div>
+<div id="audio-err">⚠ &nbsp;gagal memuat audio — periksa koneksi internet</div>
+<div id="audio-loading">memuat lagu...</div>
+<button id="back-btn" class="btn-back" onclick="goBack()">← kembali</button>
+<button id="fs-btn" onclick="toggleFS()" title="Layar penuh">⛶</button>
+<div id="bg-layer"></div>
+<div id="bg-layer-b"></div>
+<canvas id="bg-canvas"></canvas>
+<canvas id="cconf"></canvas>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-em">✦ N ✦</div>
+  <div class="sp-sub">Taman Bulan · Naffa</div>
+  <div class="sp-bw"><div class="sp-bar" id="spbar"></div></div>
+  <div class="sp-st" id="spst">menanam kenangan...</div>
+</div>
+
+<!-- RESET CONFIRMATION MODAL -->
+<!-- VOUCHER CLAIM MODAL -->
+<div id="voucher-modal" onclick="if(event.target===this)document.getElementById('voucher-modal').style.display='none';" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(9,18,32,.85);z-index:9990;align-items:center;justify-content:center;backdrop-filter:blur(8px);">
+  <div style="background:rgba(16,30,51,.97);border:1px solid rgba(242,180,65,.3);border-radius:24px;padding:34px 30px;max-width:400px;width:90%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.7);">
+    <div style="font-size:1.8rem;margin-bottom:10px;">🎁</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--cream);margin-bottom:8px;font-weight:400;">Klaim Hadiahmu, Naffa</h3>
+    <p style="font-family:'Josefin Sans',sans-serif;font-size:.75rem;color:rgba(255,253,247,.55);line-height:1.7;margin-bottom:22px;">Pilih satu, lalu unduh vouchernya. Tunjukkan ke aku kapan pun kamu mau menagihnya ✦</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="claimVoucher('makan')" style="display:flex;align-items:center;gap:12px;text-align:left;background:rgba(9,18,32,.6);border:1px solid rgba(242,180,65,.25);border-radius:14px;padding:13px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;color:var(--cream);transition:all .3s;" onmouseover="this.style.borderColor='rgba(242,180,65,.6)'" onmouseout="this.style.borderColor='rgba(242,180,65,.25)'">
+        <span style="font-size:1.4rem;">🍽️</span>
+        <span><span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:1px;">Voucher Makan</span><span style="display:block;font-size:.65rem;color:rgba(255,253,247,.5);">Traktir makan, kapan aja</span></span>
+      </button>
+      <button onclick="claimVoucher('nonton')" style="display:flex;align-items:center;gap:12px;text-align:left;background:rgba(9,18,32,.6);border:1px solid rgba(242,180,65,.25);border-radius:14px;padding:13px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;color:var(--cream);transition:all .3s;" onmouseover="this.style.borderColor='rgba(242,180,65,.6)'" onmouseout="this.style.borderColor='rgba(242,180,65,.25)'">
+        <span style="font-size:1.4rem;">🎬</span>
+        <span><span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:1px;">Voucher Nonton</span><span style="display:block;font-size:.65rem;color:rgba(255,253,247,.5);">Nonton film pilihanmu</span></span>
+      </button>
+      <button onclick="claimVoucher('main')" style="display:flex;align-items:center;gap:12px;text-align:left;background:rgba(9,18,32,.6);border:1px solid rgba(242,180,65,.25);border-radius:14px;padding:13px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;color:var(--cream);transition:all .3s;" onmouseover="this.style.borderColor='rgba(242,180,65,.6)'" onmouseout="this.style.borderColor='rgba(242,180,65,.25)'">
+        <span style="font-size:1.4rem;">🎮</span>
+        <span><span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:1px;">Voucher Main</span><span style="display:block;font-size:.65rem;color:rgba(255,253,247,.5);">Main apapun, aku temenin</span></span>
+      </button>
+    </div>
+    <button onclick="document.getElementById('voucher-modal').style.display='none';" style="margin-top:18px;background:transparent;border:1px solid rgba(255,253,247,.2);color:rgba(255,253,247,.5);padding:9px 22px;border-radius:30px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:.68rem;letter-spacing:2px;">Tutup</button>
+  </div>
+</div>
+
+<!-- Hidden voucher ticket template — rendered off-screen, captured via html2canvas, then removed -->
+<div id="voucher-ticket" style="position:fixed;top:-9999px;left:-9999px;width:600px;background:linear-gradient(135deg,#0C1626 0%,#101E33 100%);border:2px solid rgba(242,180,65,.6);border-radius:20px;padding:38px 40px;font-family:'Josefin Sans',sans-serif;color:var(--cream);">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--gold-lt);text-transform:uppercase;">Taman Bulan · Voucher Hadiah</div>
+      <div id="vt-title" style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;margin-top:8px;color:var(--gold-lt);">VOUCHER MAKAN</div>
+    </div>
+    <div id="vt-icon" style="font-size:2.6rem;">🍽️</div>
+  </div>
+  <div style="border-top:2px dashed rgba(242,180,65,.35);margin:22px 0;position:relative;">
+    <div style="position:absolute;left:-58px;top:-13px;width:26px;height:26px;border-radius:50%;background:#1C4A73;"></div>
+    <div style="position:absolute;right:-58px;top:-13px;width:26px;height:26px;border-radius:50%;background:#1C4A73;"></div>
+  </div>
+  <div id="vt-desc" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.15rem;line-height:1.7;color:rgba(255,253,247,.9);">Berlaku untuk satu kali traktiran makan bersama, kapan pun kamu mau menagihnya.</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:26px;">
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:rgba(255,253,247,.4);">UNTUK</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--cream);">Naffa Febry Cornelia</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:rgba(255,253,247,.4);">KODE</div>
+      <div id="vt-code" style="font-family:'Space Mono',monospace;font-size:.9rem;color:var(--gold-lt);letter-spacing:2px;">MAKAN-NAFFA20</div>
+    </div>
+  </div>
+</div>
+
+<div id="reset-confirm-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(9,18,32,.85);z-index:9990;align-items:center;justify-content:center;backdrop-filter:blur(8px);">
+  <div style="background:rgba(16,30,51,.97);border:1px solid rgba(242,180,65,.3);border-radius:24px;padding:36px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.7);">
+    <div style="font-size:2rem;margin-bottom:12px;">🌱</div>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--cream);margin-bottom:10px;font-weight:400;">Mulai Ulang Taman?</h3>
+    <p style="font-family:'Josefin Sans',sans-serif;font-size:.78rem;color:rgba(255,253,247,.6);line-height:1.7;margin-bottom:24px;">Semua perjalananmu — pilihan bunga, hewan jiwa, kapsul waktu, dan harapan — akan direset. Apakah kamu yakin?</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button onclick="document.getElementById('reset-confirm-modal').style.display='none';" style="background:transparent;border:1px solid rgba(255,253,247,.2);color:rgba(255,253,247,.6);padding:11px 24px;border-radius:30px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:.72rem;letter-spacing:2px;">Batal</button>
+      <button onclick="document.getElementById('reset-confirm-modal').style.display='none';resetAll();" style="background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:#0A1830;padding:11px 24px;border-radius:30px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:.72rem;letter-spacing:2px;font-weight:600;">Ya, Ulangi ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM ALERT MODAL -->
+<div id="ca-modal" onclick="if(event.target===this)closeAlert();" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(9,18,32,.85);z-index:9995;align-items:center;justify-content:center;backdrop-filter:blur(8px);">
+  <div style="background:rgba(16,30,51,.97);border:1px solid rgba(242,180,65,.3);border-radius:24px;padding:34px 30px;max-width:340px;width:88%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.7);">
+    <div id="ca-icon" style="font-size:1.8rem;margin-bottom:12px;">🌸</div>
+    <p id="ca-msg" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--cream);line-height:1.7;margin-bottom:24px;"></p>
+    <button onclick="closeAlert()" style="background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:#0A1830;padding:11px 30px;border-radius:30px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:.72rem;letter-spacing:2px;font-weight:600;">Mengerti</button>
+  </div>
+</div>
+
+<!-- DEV SKIP -->
+<div id="skipmenu">
+  <h4 style="font-family:'Space Mono',monospace;font-size:.65rem;color:var(--gold);margin-bottom:8px;letter-spacing:2px;">[ DEV NAVIGATION ]</h4>
+  <button class="skbtn" onclick="devSkip('s1')">01 · Pintu Taman</button>
+  <button class="skbtn" onclick="devSkip('s2')">02 · Teka-Teki Bunga</button>
+  <button class="skbtn" onclick="devSkip('s2b')">03 · Rahasia Tahun Lahir</button>
+  <button class="skbtn" onclick="devSkip('scd')">04 · Dua Dekade Hidup</button>
+  <button class="skbtn" onclick="devSkip('str')">05 · Kartu Ramalan Bulan</button>
+  <button class="skbtn" onclick="devSkip('sph')">06 · Esensi Bunga & Hewan</button>
+  <button class="skbtn" onclick="devSkip('s3')">07 · Otentikasi Jiwa</button>
+  <button class="skbtn" onclick="devSkip('s3b')">08 · Mahkota Takdir</button>
+  <button class="skbtn" onclick="devSkip('sci')">09 · Animasi Filosofis</button>
+  <button class="skbtn" onclick="devSkip('spz')">10 · Puzzle Bunga</button>
+  <button class="skbtn" onclick="devSkip('svg-screen')">11 · Virtual Garden</button>
+  <button class="skbtn" onclick="devSkip('srh')">12 · Ruang Hujan</button>
+  <button class="skbtn" onclick="devSkip('s8')">13 · Surat Nostalgia</button>
+  <button class="skbtn" onclick="devSkip('sfl')">14 · Surat ke 2030</button>
+  <button class="skbtn" onclick="devSkip('s9')">15 · Tiga Restu</button>
+  <button class="skbtn" onclick="devSkip('s9b')">16 · Partikel & Harapan</button>
+  <button class="skbtn" onclick="devSkip('s10')">17 · Tiup Lilin</button>
+  <button class="skbtn" onclick="devSkip('s11')">18 · Selamat Ulang Tahun!</button>
+  <button class="skbtn" onclick="devSkip('sphoto')">19 · Bilik Foto</button>
+  <button class="skbtn" onclick="devSkip('s13')">20 · Sertifikat</button>
+</div>
+
+<!-- AUDIO — satu elemen tunggal dipakai bergantian untuk semua lagu di playlist (tanpa loop, supaya event 'ended' aktif untuk auto-lanjut) -->
+<audio id="am"></audio>
+
+<!-- AUDIO HUD -->
+<div id="ahud">
+  <span class="mctl" onclick="mPrev()">‹</span>
+  <div class="vzwrap" id="vzwrap"></div>
+  <span id="ntitle">ABOUT YOU — THE 1975</span>
+  <span class="mctl" id="mpp" onclick="mToggle()">▶</span>
+  <span class="mctl" onclick="mNext()">›</span>
+  <span class="mctl" id="playlist-btn" onclick="togglePlaylistMenu(event)" title="Pilih lagu">☰</span>
+</div>
+<div id="playlist-menu" class="playlist-menu"></div>
+<div id="micst" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:8px;background:rgba(12,22,38,.85);border:1px solid rgba(127,174,106,.3);padding:8px 20px;border-radius:24px;backdrop-filter:blur(12px);"><div class="micdot"></div><span style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--sage-lt);">TIUPAN TERDETEKSI — TIUP SEKARANG</span></div>
+<div id="phud"><span style="font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:1.5px;color:rgba(242,180,65,.55);white-space:nowrap;">untuk Naffa ✦</span><div id="pdots" style="display:flex;flex-direction:row;gap:5px;align-items:center;"></div><span id="plbl">1/20</span></div>
+
+<!-- S1 PINTU TAMAN -->
+<div class="screen active" id="s1">
+  <div class="s1-glow"></div>
+  <div style="margin-bottom:10px;position:relative;">
+    <div style="font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:4px;color:rgba(242,180,65,.65);margin-bottom:12px;">TAMAN.BULAN / SELAMAT.DATANG</div>
+    <h2 id="s1-greet" style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,5vw,2.4rem);font-weight:400;color:rgba(255,253,247,.92);letter-spacing:1px;line-height:1.35;">Pintu Taman Sedang Terbuka...</h2>
+    <div class="s1-flourish"><span></span><i>✦</i><span></span></div>
+  </div>
+  <div class="pterm" id="tbox"></div>
+  <span class="s1-cta"><button class="btn" id="entbtn" onclick="goS2()" style="display:none;"><span aria-hidden="true">✦</span> Masuki Taman</button></span>
+</div>
+
+<!-- WELCOMEBACK — muncul kalau pengunjung sudah pernah menyelesaikan seluruh
+     perjalanan sebelumnya & baru buka link ini lagi setelah hari-H. Alih-alih
+     mengulang dari nol, dikasih pintasan ke bagian-bagian yang paling berkesan. -->
+<div class="screen" id="welcomeback">
+  <div class="s1-glow"></div>
+  <div style="margin-bottom:14px;position:relative;max-width:520px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:4px;color:rgba(242,180,65,.65);margin-bottom:12px;">TAMAN.BULAN / KUNJUNGAN.KEMBALI</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,4.8vw,2.3rem);font-weight:400;color:rgba(255,253,247,.92);letter-spacing:1px;line-height:1.35;">Selamat Datang Kembali, <span style="color:var(--gold-lt);">Naffa</span> ✦</h2>
+    <div class="s1-flourish"><span></span><i>✦</i><span></span></div>
+  </div>
+  <p id="wb-sub" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.02rem;color:rgba(255,253,247,.65);line-height:1.8;max-width:460px;margin-bottom:6px;">Taman ini sudah pernah kamu jelajahi seutuhnya. Kali ini, mau ngapain?</p>
+  <p id="wb-meta" style="font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:1.5px;color:rgba(242,180,65,.5);margin-bottom:32px;"></p>
+  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;">
+    <button class="btn" onclick="startFreshJourney()" style="padding:14px 28px;font-size:.75rem;">✦ Jalani Ulang dari Awal</button>
+    <button class="btn btn-sg" onclick="jumpToPhotobooth()" style="padding:14px 28px;font-size:.75rem;">📸 Buka Bilik Foto</button>
+    <button class="btn btn-bl" onclick="jumpToCertificate()" style="padding:14px 28px;font-size:.75rem;">🎓 Lihat Sertifikat</button>
+    <button onclick="downloadSuratPDF()" style="background:transparent;border:1px solid rgba(242,180,65,.3);border-radius:50px;padding:11px 24px;font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:1.5px;color:rgba(255,253,247,.7);cursor:pointer;transition:all .3s;">📄 Unduh Surat 2030 (PDF)</button>
+  </div>
+</div>
+
+<!-- S2 PUZZLE 1 -->
+<div class="screen" id="s2">
+  <div class="gc">
+    <div class="clabel">✦ Gerbang Pertama · Teka-Teki Bunga</div>
+    <h2 style="font-size:1.6rem;font-weight:500;color:var(--cream);margin-bottom:10px;">Berapa Kelopak Usiamu?</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);line-height:1.6;margin-bottom:14px;">Di kebun rahasia ini, sebuah mawar mekar sebanyak usiamu hari ini. Hitunglah:</p>
+    <div class="mdisp">2⁵ &minus; 12 = ?</div>
+    <div class="pwrap">
+      <input type="tel" id="ca" class="pinput" placeholder="✦" maxlength="2" autocomplete="off">
+      <div class="phint" id="h1">Kamu pasti bisa menghitungnya.</div>
+      <button class="btn-hint" onclick="showHint(1)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" style="vertical-align:middle;display:inline-block;margin-right:4px"><path d="M8 14 C8 14 3 10 3 6 C3 3.5 5.5 2 8 4 C10.5 2 13 3.5 13 6 C13 10 8 14 8 14Z" fill="#7FAE6A" opacity=".8"/><line x1="8" y1="14" x2="8" y2="7" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round"/></svg>Butuh petunjuk?</button>
+    </div>
+    <button class="btn btn-sg" onclick="verify1()" style="margin-top:12px;padding:12px 32px;">Buka Kelopak</button>
+  </div>
+</div>
+
+<!-- S2B PUZZLE 2 -->
+<div class="screen" id="s2b">
+  <div class="gc">
+    <div class="clabel">✦ Gerbang Kedua · Akar Waktu</div>
+    <h2 style="font-size:1.6rem;font-weight:500;color:var(--cream);margin-bottom:10px;">Kapan Akar Waktu Ini Ditanam?</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);line-height:1.6;margin-bottom:14px;">Di musim manakah taman ini pertama kali kamu mulai berakar?</p>
+    <div class="mdisp" style="color:var(--sage-lt);">501.75 × 4 = ?</div>
+    <div class="pwrap">
+      <input type="tel" id="cb" class="pinput" placeholder="✦✦✦✦" maxlength="4" style="border-color:rgba(127,174,106,.4);width:150px;" autocomplete="off">
+      <div class="phint" id="h2">Ingatkan dirimu tentang fajar pertamamu.</div>
+      <button class="btn-hint" onclick="showHint(2)"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" style="vertical-align:middle;display:inline-block;margin-right:4px"><path d="M8 14 C8 14 3 10 3 6 C3 3.5 5.5 2 8 4 C10.5 2 13 3.5 13 6 C13 10 8 14 8 14Z" fill="#7FAE6A" opacity=".8"/><line x1="8" y1="14" x2="8" y2="7" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round"/></svg>Butuh petunjuk?</button>
+    </div>
+    <button class="btn btn-sg" onclick="verify2()" style="margin-top:12px;padding:12px 32px;">Tanam Akar Waktu</button>
+  </div>
+</div>
+
+<!-- SCD COUNTDOWN -->
+<div class="screen" id="scd">
+  <div class="rbg" style="margin-bottom:10px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--sage);margin-bottom:6px;">✦ WAKTU YANG TELAH KAU JALANI</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:400;color:var(--cream);">Dua Dekade Mekar</h2>
+    <p style="font-size:.82rem;color:rgba(255,253,247,.65);line-height:1.7;max-width:500px;margin:8px auto 0;">Sejak fajar 23 Januari 2007, bunga indahmu telah mekar bersama waktu selama:</p>
+  </div>
+  <div class="tgrid">
+    <div class="tblock"><span class="tval" id="cdy">00</span><span class="tlbl">Tahun</span></div>
+    <div class="tblock"><span class="tval" id="cdd">00</span><span class="tlbl">Hari</span></div>
+    <div class="tblock"><span class="tval" id="cdh">00</span><span class="tlbl">Jam</span></div>
+    <div class="tblock"><span class="tval" id="cdm">00</span><span class="tlbl">Menit</span></div>
+    <div class="tblock"><span class="tval" id="cds">00</span><span class="tlbl">Detik</span></div>
+  </div>
+  <p style="font-size:.62rem;font-family:'Space Mono',monospace;color:rgba(242,180,65,.4);letter-spacing:1.5px;" id="livems">MENGHITUNG WAKTU...</p>
+  <button class="btn btn-bl" onclick="if(cdInt){clearInterval(cdInt);cdInt=null;}go('scd','str')" style="margin-top:20px;padding:12px 34px;">Masuki Gerbang Ramalan →</button>
+</div>
+
+<!-- STR TAROT -->
+<div class="screen" id="str">
+  <div class="rbg" style="margin-bottom:10px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--rose);margin-bottom:5px;">✦ KARTU RAMALAN BULAN</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Pilih Satu Kartu Untukmu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:460px;margin:5px auto 0;line-height:1.6;">Biarkan jarimu mengikuti bisikan intuitifmu.</p>
+  </div>
+  <div class="tgrid2">
+    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE SUN</div><h4>Sang Mentari</h4><p>Cahayamu akan menerangi setiap ruang yang kamu masuki. Kelimpahan dan kejelasan menanti.</p></div></div></div>
+    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE STAR</div><h4>Bintang Petunjuk</h4><p>Impian yang kamu peluk erat di malam sepi akan mulai mewujud. Kamu adalah cahaya penuntun dirimu sendiri.</p></div></div></div>
+    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE EMPRESS</div><h4>Sang Ratu Bunga</h4><p>Kedewasaan membawa keanggunan raga dan kematangan jiwa. Kekuasaan atas kebahagiaanmu kini milikmu.</p></div></div></div>
+    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE MOON</div><h4>Rembulan Abadi</h4><p>Siklus baru membawa keberuntungan. Segala lelah bertransformasi menjadi kekuatan tak terduga.</p></div></div></div>
+    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE WORLD</div><h4>Dunia Hijau</h4><p>Kebijaksanaan batinmu meningkat. Kamu akan dikelilingi perlindungan dan harmoni yang kokoh.</p></div></div></div>
+    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE LOVERS</div><h4>Sang Kupu-Kupu</h4><p>Kasih sayang tulus dan penerimaan utuh terhadap dirimu akan datang memeluk linimasamu.</p></div></div></div>
+  </div>
+  <button class="btn btn-bl" id="ntarot" onclick="go('str','sph')" style="display:none;padding:12px 34px;">Lanjutkan Penjelajahan →</button>
+  <p id="strHintBox" style="display:none;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--rose);letter-spacing:1px;background:rgba(232,96,76,.08);border:1px solid rgba(232,96,76,.2);border-radius:10px;padding:8px 14px;max-width:320px;line-height:1.6;text-align:center;margin-top:8px;"></p>
+  <button class="btn-hint" id="strHintBtn" onclick="strShowHint()" style="margin-top:6px;border-color:rgba(232,96,76,.3);color:rgba(232,96,76,.8);">✦ butuh petunjuk?</button>
+</div>
+
+<!-- SPH PHILO -->
+<div class="screen" id="sph">
+  <div class="rbg" style="margin-bottom:10px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:5px;">✦ ESENSI JIWA</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Pilih Dua Simbol Batinmu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:480px;margin:5px auto 0;line-height:1.6;">Pilihanmu akan diabadikan dalam sertifikatmu.</p>
+  </div>
+  <div class="phwrap">
+    <div class="phcol">
+      <h3>Bunga Jiwa</h3>
+      <div class="phopt" id="fl1" onclick="pickPhilo('f','Kamomil (Resiliensi)','fl1')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(60 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(120 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(180 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(240 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(300 16 16)"/><circle cx="16" cy="16" r="4.5" fill="#F2B441"/></svg></div><div class="phtxt"><h4>Kamomil</h4><p>Tumbuh anggun di tengah badai kehidupan.</p></div></div>
+      <div class="phopt" id="fl2" onclick="pickPhilo('f','Teratai (Kemurnian)','fl2')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#E8604C" opacity=".75"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#F1A094" opacity=".7" transform="rotate(72 16 16)"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#E8604C" opacity=".75" transform="rotate(144 16 16)"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#F1A094" opacity=".7" transform="rotate(216 16 16)"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#E8604C" opacity=".75" transform="rotate(288 16 16)"/><circle cx="16" cy="16" r="4" fill="#FFFDF7"/></svg></div><div class="phtxt"><h4>Teratai</h4><p>Lahirkan ketenangan dari air yang paling keruh.</p></div></div>
+      <div class="phopt" id="fl3" onclick="pickPhilo('f','Magnolia (Martabat)','fl3')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#F1A094" opacity=".85"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#e8c8d0" opacity=".8" transform="rotate(60 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#F1A094" opacity=".85" transform="rotate(120 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#e8c8d0" opacity=".8" transform="rotate(180 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#F1A094" opacity=".85" transform="rotate(240 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#e8c8d0" opacity=".8" transform="rotate(300 16 16)"/><circle cx="16" cy="16" r="3.8" fill="#FFFDF7"/></svg></div><div class="phtxt"><h4>Magnolia</h4><p>Ketekunan abadi dan kecantikan melampaui waktu.</p></div></div>
+      <div class="phopt" id="fl4" onclick="pickPhilo('f','Lavendel (Ketenangan)','fl4')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><path d="M16 28 C16 28 4 20 4 12 C4 8 8 5 12 7 C14 8 15 9 16 11 C17 9 18 8 20 7 C24 5 28 8 28 12 C28 20 16 28 16 28Z" fill="#5FAEDB" opacity=".8"/><ellipse cx="16" cy="10" rx="2" ry="3.5" fill="#8FCBEA" opacity=".5"/></svg></div><div class="phtxt"><h4>Lavendel</h4><p>Penyembuh jiwa dan pembawa kedamaian batin.</p></div></div>
+    </div>
+    <div class="phcol">
+      <h3>Hewan Jiwa</h3>
+      <div class="phopt" id="an1" onclick="pickPhilo('a','Kupu-Kupu (Metamorfosis)','an1')"><div class="phico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="13" cy="16" rx="10" ry="7" fill="#E8604C" opacity=".7" transform="rotate(-20 13 16)"/><ellipse cx="27" cy="16" rx="10" ry="7" fill="#E8604C" opacity=".7" transform="rotate(20 27 16)"/><ellipse cx="14" cy="27" rx="7" ry="5" fill="#F1A094" opacity=".6" transform="rotate(20 14 27)"/><ellipse cx="26" cy="27" rx="7" ry="5" fill="#F1A094" opacity=".6" transform="rotate(-20 26 27)"/><path d="M20 12 Q21 20 20 30 Q19 20 20 12Z" fill="#5E3B21" stroke="#5E3B21" stroke-width=".5"/><path d="M20 10 Q18 7 16 8 M20 10 Q22 7 24 8" stroke="#5E3B21" stroke-width="1" stroke-linecap="round" fill="none"/></svg></div><div class="phtxt"><h4>Kupu-Kupu</h4><p>Saksi perjuangan menjadi versi terindah dirimu.</p></div></div>
+      <div class="phopt" id="an2" onclick="pickPhilo('a','Cendrawasih (Keanggunan)','an2')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="18" rx="7" ry="9" fill="#7FAE6A" opacity=".8"/><circle cx="16" cy="10" r="5" fill="#E8604C" opacity=".75"/><path d="M14 10 L12 7 L15 9Z" fill="#F6CB7A"/><circle cx="18" cy="9" r="1.5" fill="#101E33"/><circle cx="18.5" cy="8.7" r=".5" fill="#FFFDF7"/><path d="M22 15 L28 12 L24 17Z" fill="#F2B441" opacity=".7"/><path d="M22 20 L27 20 L23 23Z" fill="#F6CB7A" opacity=".6"/></svg></div><div class="phtxt"><h4>Cendrawasih</h4><p>Keunikan rupa, martabat tinggi, dan pesona magis.</p></div></div>
+      <div class="phopt" id="an3" onclick="pickPhilo('a','Rusa (Intuisi)','an3')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="21" rx="7" ry="8" fill="#F2B441" opacity=".7"/><ellipse cx="16" cy="12" rx="5" ry="6" fill="#F2B441" opacity=".75"/><circle cx="14" cy="11" r="1.2" fill="#101E33"/><circle cx="14.3" cy="10.7" r=".4" fill="#FFFDF7"/><path d="M11 6 L8 2 M11 6 L9 3.5" stroke="#F2B441" stroke-width="1.2" stroke-linecap="round"/><path d="M21 6 L24 2 M21 6 L23 3.5" stroke="#F2B441" stroke-width="1.2" stroke-linecap="round"/><path d="M14 14 L15 13 L17 14" stroke="#101E33" stroke-width=".8" stroke-linecap="round" fill="none"/></svg></div><div class="phtxt"><h4>Rusa Pudar</h4><p>Langkah waspada, kelembutan batin, intuisi tajam.</p></div></div>
+      <div class="phopt" id="an4" onclick="pickPhilo('a','Merpati (Kedamaian)','an4')"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="18" rx="5" ry="6" fill="#FFFDF7" opacity=".9"/><circle cx="16" cy="12" r="4" fill="#FFFDF7" opacity=".9"/><path d="M11 16 L2 12 L8 20Z" fill="#FFFDF7" opacity=".85"/><path d="M21 16 L30 12 L24 20Z" fill="#FFFDF7" opacity=".85"/><circle cx="14.5" cy="11.5" r="1" fill="#101E33"/><path d="M13 13 L15 14 L13 15" fill="#F6CB7A" opacity=".9"/><path d="M16 24 L15 29 L17 29Z" fill="#FFFDF7" opacity=".7"/></svg></div><div class="phtxt"><h4>Merpati Putih</h4><p>Ketulusan niat, kabar baik, kesetiaan nurani abadi.</p></div></div>
+    </div>
+  </div>
+  <button class="btn btn-bl" id="nphilo" onclick="confirmPhilo()" style="display:none;padding:12px 32px;">Kunci Esensi Jiwaku ✦</button>
+</div>
+
+<!-- S3 CHOICE -->
+<div class="screen" id="s3">
+  <div class="gc" style="max-width:540px;">
+    <div class="clabel">✦ Gerbang Jiwa · Siapakah Kamu?</div>
+    <h2 style="font-size:1.6rem;font-weight:400;color:var(--cream);margin-bottom:14px;">Pilih Identitas Sejatimu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);line-height:1.6;margin-bottom:18px;">Taman ini hanya terbuka untuk jiwa yang mengenali kekuatannya sendiri:</p>
+    <button class="bchoice" onclick="wrongC(this)">1. Aku memilih berjalan dalam keraguan dan ketakutan yang terus menghantui</button>
+    <button class="bchoice" onclick="wrongC(this)">2. Aku memilih menetap di tempat yang nyaman dan tidak pernah bertumbuh</button>
+    <button class="bchoice" onclick="rightC(this)">3. Aku adalah perempuan luar biasa, tangguh, mandiri, dan layak atas segala kebahagiaan yang paling indah</button>
+  </div>
+</div>
+
+<!-- S3B DESTINY -->
+<div class="screen" id="s3b">
+  <div class="rbg" style="margin-bottom:12px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--rose);margin-bottom:5px;">✦ MAHKOTA TAKDIR</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Pilih Gelar Spiritualitasmu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:480px;margin:5px auto 0;line-height:1.6;">Gelar ini akan diabadikan dalam sertifikat akhirmu.</p>
+  </div>
+  <div class="dgrid">
+    <div class="dcard" id="p1" onclick="pickDest('The Moonlit Gardener','p1')"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none"><path d="M28 20a12 12 0 1 1-12-12 9 9 0 0 0 12 12z" fill="#8FCBEA" opacity=".85"/><circle cx="26" cy="12" r="1.5" fill="#F6CB7A" opacity=".6"/><circle cx="30" cy="17" r="1" fill="#F6CB7A" opacity=".5"/></svg></div><h4>Moonlit Gardener</h4><p>Jiwa penjaga taman bulan yang merawat impian di bawah cahaya rembulan.</p></div>
+    <div class="dcard" id="p2" onclick="pickDest('The Botanical Dreamer','p2')"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 10 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="#7FAE6A" opacity=".8"/><line x1="20" y1="34" x2="20" y2="14" stroke="#B2CEA6" stroke-width="1.5" stroke-linecap="round"/><line x1="20" y1="26" x2="14" y2="20" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round" opacity=".7"/><line x1="20" y1="22" x2="26" y2="18" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round" opacity=".7"/></svg></div><h4>Botanical Dreamer</h4><p>Pribadi pemimpi yang menemukan keajaiban dalam setiap helai daun dan musim.</p></div>
+    <div class="dcard" id="p3" onclick="pickDest('The Wildflower Sovereign','p3')"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none"><circle cx="20" cy="20" r="7" fill="#F2B441" opacity=".9"/><g><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(45 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(90 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(135 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(180 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(225 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(270 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(315 20 20)"/></g><circle cx="20" cy="20" r="7" fill="#F2B441" opacity=".9"/></svg></div><h4>Wildflower Sovereign</h4><p>Perempuan berdaulat, mekar liar dan indah, tak terbendung oleh badai apapun.</p></div>
+  </div>
+  <button class="btn btn-bl" id="npath" onclick="startCin()" style="display:none;padding:12px 38px;">Kenakan Mahkotaku ✦</button>
+</div>
+
+
+
+<!-- SCI CINEMATIC — JessicaaSun flower-blooming recreation -->
+
+
+<div class="screen" id="sci" style="justify-content:center;align-items:center;overflow:hidden;">
+  <div class="fl-wrap">
+    <!-- Night -->
+    <div class="fl-night"></div>
+
+    <!-- Moon -->
+    <div class="fl-moon"></div>
+
+    <!-- Stars -->
+    <div class="fl-star fl-star--1"></div>
+    <div class="fl-star fl-star--2"></div>
+    <div class="fl-star fl-star--3"></div>
+    <div class="fl-star fl-star--4"></div>
+    <div class="fl-star fl-star--5"></div>
+    <div class="fl-star fl-star--6"></div>
+
+    <!-- Flowers -->
+    <div class="fl-flowers">
+      <!-- Flower 1 (left - pink) -->
+      <div class="fl-flower fl-flower--1">
+        <div class="fl-leafs">
+          <div class="fl-leaf" style="--rot:0.0deg;animation-delay:calc(var(--bloom-delay) + 0.0s)"></div>
+          <div class="fl-leaf" style="--rot:30.0deg;animation-delay:calc(var(--bloom-delay) + 0.045s)"></div>
+          <div class="fl-leaf" style="--rot:60.0deg;animation-delay:calc(var(--bloom-delay) + 0.09s)"></div>
+          <div class="fl-leaf" style="--rot:90.0deg;animation-delay:calc(var(--bloom-delay) + 0.135s)"></div>
+          <div class="fl-leaf" style="--rot:120.0deg;animation-delay:calc(var(--bloom-delay) + 0.18s)"></div>
+          <div class="fl-leaf" style="--rot:150.0deg;animation-delay:calc(var(--bloom-delay) + 0.225s)"></div>
+          <div class="fl-leaf" style="--rot:180.0deg;animation-delay:calc(var(--bloom-delay) + 0.27s)"></div>
+          <div class="fl-leaf" style="--rot:210.0deg;animation-delay:calc(var(--bloom-delay) + 0.315s)"></div>
+          <div class="fl-leaf" style="--rot:240.0deg;animation-delay:calc(var(--bloom-delay) + 0.36s)"></div>
+          <div class="fl-leaf" style="--rot:270.0deg;animation-delay:calc(var(--bloom-delay) + 0.405s)"></div>
+          <div class="fl-leaf" style="--rot:300.0deg;animation-delay:calc(var(--bloom-delay) + 0.45s)"></div>
+          <div class="fl-leaf" style="--rot:330.0deg;animation-delay:calc(var(--bloom-delay) + 0.495s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:15.0deg;animation-delay:calc(var(--bloom-delay) + 0.05s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:45.0deg;animation-delay:calc(var(--bloom-delay) + 0.095s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:75.0deg;animation-delay:calc(var(--bloom-delay) + 0.14s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:105.0deg;animation-delay:calc(var(--bloom-delay) + 0.185s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:135.0deg;animation-delay:calc(var(--bloom-delay) + 0.23s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:165.0deg;animation-delay:calc(var(--bloom-delay) + 0.275s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:195.0deg;animation-delay:calc(var(--bloom-delay) + 0.32s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:225.0deg;animation-delay:calc(var(--bloom-delay) + 0.365s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:255.0deg;animation-delay:calc(var(--bloom-delay) + 0.41s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:285.0deg;animation-delay:calc(var(--bloom-delay) + 0.455s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:315.0deg;animation-delay:calc(var(--bloom-delay) + 0.5s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:345.0deg;animation-delay:calc(var(--bloom-delay) + 0.545s)"></div>
+          <div class="fl-center"></div>
+        </div>
+        <div class="fl-stem">
+          <div class="fl-ray fl-ray--1"></div>
+          <div class="fl-ray fl-ray--2"></div>
+          <div class="fl-ray fl-ray--3"></div>
+        </div>
+      </div>
+      <!-- Flower 2 (center - gold, 6 petals) -->
+      <div class="fl-flower fl-flower--2">
+        <div class="fl-leafs">
+          <div class="fl-leaf" style="--rot:0.0deg;animation-delay:calc(var(--bloom-delay) + 0.0s)"></div>
+          <div class="fl-leaf" style="--rot:22.5deg;animation-delay:calc(var(--bloom-delay) + 0.04s)"></div>
+          <div class="fl-leaf" style="--rot:45.0deg;animation-delay:calc(var(--bloom-delay) + 0.08s)"></div>
+          <div class="fl-leaf" style="--rot:67.5deg;animation-delay:calc(var(--bloom-delay) + 0.12s)"></div>
+          <div class="fl-leaf" style="--rot:90.0deg;animation-delay:calc(var(--bloom-delay) + 0.16s)"></div>
+          <div class="fl-leaf" style="--rot:112.5deg;animation-delay:calc(var(--bloom-delay) + 0.2s)"></div>
+          <div class="fl-leaf" style="--rot:135.0deg;animation-delay:calc(var(--bloom-delay) + 0.24s)"></div>
+          <div class="fl-leaf" style="--rot:157.5deg;animation-delay:calc(var(--bloom-delay) + 0.28s)"></div>
+          <div class="fl-leaf" style="--rot:180.0deg;animation-delay:calc(var(--bloom-delay) + 0.32s)"></div>
+          <div class="fl-leaf" style="--rot:202.5deg;animation-delay:calc(var(--bloom-delay) + 0.36s)"></div>
+          <div class="fl-leaf" style="--rot:225.0deg;animation-delay:calc(var(--bloom-delay) + 0.4s)"></div>
+          <div class="fl-leaf" style="--rot:247.5deg;animation-delay:calc(var(--bloom-delay) + 0.44s)"></div>
+          <div class="fl-leaf" style="--rot:270.0deg;animation-delay:calc(var(--bloom-delay) + 0.48s)"></div>
+          <div class="fl-leaf" style="--rot:292.5deg;animation-delay:calc(var(--bloom-delay) + 0.52s)"></div>
+          <div class="fl-leaf" style="--rot:315.0deg;animation-delay:calc(var(--bloom-delay) + 0.56s)"></div>
+          <div class="fl-leaf" style="--rot:337.5deg;animation-delay:calc(var(--bloom-delay) + 0.6s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:11.25deg;animation-delay:calc(var(--bloom-delay) + 0.05s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:33.75deg;animation-delay:calc(var(--bloom-delay) + 0.09s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:56.25deg;animation-delay:calc(var(--bloom-delay) + 0.13s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:78.75deg;animation-delay:calc(var(--bloom-delay) + 0.17s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:101.25deg;animation-delay:calc(var(--bloom-delay) + 0.21s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:123.75deg;animation-delay:calc(var(--bloom-delay) + 0.25s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:146.25deg;animation-delay:calc(var(--bloom-delay) + 0.29s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:168.75deg;animation-delay:calc(var(--bloom-delay) + 0.33s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:191.25deg;animation-delay:calc(var(--bloom-delay) + 0.37s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:213.75deg;animation-delay:calc(var(--bloom-delay) + 0.41s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:236.25deg;animation-delay:calc(var(--bloom-delay) + 0.45s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:258.75deg;animation-delay:calc(var(--bloom-delay) + 0.49s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:281.25deg;animation-delay:calc(var(--bloom-delay) + 0.53s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:303.75deg;animation-delay:calc(var(--bloom-delay) + 0.57s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:326.25deg;animation-delay:calc(var(--bloom-delay) + 0.61s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:348.75deg;animation-delay:calc(var(--bloom-delay) + 0.65s)"></div>
+          <div class="fl-center"></div>
+        </div>
+        <div class="fl-stem">
+          <div class="fl-ray fl-ray--1"></div>
+          <div class="fl-ray fl-ray--2"></div>
+          <div class="fl-ray fl-ray--3"></div>
+        </div>
+      </div>
+      <!-- Flower 3 (right - blue) -->
+      <div class="fl-flower fl-flower--3">
+        <div class="fl-leafs">
+          <div class="fl-leaf" style="--rot:0.0deg;animation-delay:calc(var(--bloom-delay) + 0.0s)"></div>
+          <div class="fl-leaf" style="--rot:30.0deg;animation-delay:calc(var(--bloom-delay) + 0.045s)"></div>
+          <div class="fl-leaf" style="--rot:60.0deg;animation-delay:calc(var(--bloom-delay) + 0.09s)"></div>
+          <div class="fl-leaf" style="--rot:90.0deg;animation-delay:calc(var(--bloom-delay) + 0.135s)"></div>
+          <div class="fl-leaf" style="--rot:120.0deg;animation-delay:calc(var(--bloom-delay) + 0.18s)"></div>
+          <div class="fl-leaf" style="--rot:150.0deg;animation-delay:calc(var(--bloom-delay) + 0.225s)"></div>
+          <div class="fl-leaf" style="--rot:180.0deg;animation-delay:calc(var(--bloom-delay) + 0.27s)"></div>
+          <div class="fl-leaf" style="--rot:210.0deg;animation-delay:calc(var(--bloom-delay) + 0.315s)"></div>
+          <div class="fl-leaf" style="--rot:240.0deg;animation-delay:calc(var(--bloom-delay) + 0.36s)"></div>
+          <div class="fl-leaf" style="--rot:270.0deg;animation-delay:calc(var(--bloom-delay) + 0.405s)"></div>
+          <div class="fl-leaf" style="--rot:300.0deg;animation-delay:calc(var(--bloom-delay) + 0.45s)"></div>
+          <div class="fl-leaf" style="--rot:330.0deg;animation-delay:calc(var(--bloom-delay) + 0.495s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:15.0deg;animation-delay:calc(var(--bloom-delay) + 0.05s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:45.0deg;animation-delay:calc(var(--bloom-delay) + 0.095s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:75.0deg;animation-delay:calc(var(--bloom-delay) + 0.14s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:105.0deg;animation-delay:calc(var(--bloom-delay) + 0.185s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:135.0deg;animation-delay:calc(var(--bloom-delay) + 0.23s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:165.0deg;animation-delay:calc(var(--bloom-delay) + 0.275s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:195.0deg;animation-delay:calc(var(--bloom-delay) + 0.32s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:225.0deg;animation-delay:calc(var(--bloom-delay) + 0.365s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:255.0deg;animation-delay:calc(var(--bloom-delay) + 0.41s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:285.0deg;animation-delay:calc(var(--bloom-delay) + 0.455s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:315.0deg;animation-delay:calc(var(--bloom-delay) + 0.5s)"></div>
+          <div class="fl-leaf fl-leaf-in" style="--rot:345.0deg;animation-delay:calc(var(--bloom-delay) + 0.545s)"></div>
+          <div class="fl-center"></div>
+        </div>
+        <div class="fl-stem">
+          <div class="fl-ray fl-ray--1"></div>
+          <div class="fl-ray fl-ray--2"></div>
+          <div class="fl-ray fl-ray--3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grass -->
+    <div class="fl-g" id="fl-grass-wrap"></div>
+  </div>
+
+  <!-- Quote overlay -->
+  <div class="fl-quote-wrap">
+    <div id="pmain" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1rem,2.5vw,1.4rem);color:rgba(255,253,247,.95);line-height:1.8;text-shadow:0 0 30px rgba(232,96,76,.6),0 0 60px rgba(242,180,65,.2);opacity:0;transition:opacity 1s ease;"></div>
+    <div id="pname" style="font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:4px;color:rgba(242,180,65,.7);margin-top:14px;opacity:0;transition:opacity .8s ease;"></div>
+  </div>
+  <button id="cskip" class="btn" onclick="endCin()" style="position:absolute;bottom:5%;left:50%;transform:translateX(-50%);z-index:20;padding:9px 26px;font-size:.65rem;letter-spacing:3px;border-color:rgba(255,253,247,.15);color:rgba(255,253,247,.35);opacity:0;transition:opacity 1s ease;pointer-events:none;">Lanjutkan</button>
+</div>
+
+
+
+<!-- SPZ PUZZLE BUNGA -->
+
+
+<div class="screen" id="spz">
+  <div class="pz-wrap">
+    <div class="pz-header" id="pzHeader">
+      <div class="pz-label">✦ PUZZLE TAMAN BULAN</div>
+      <h2 class="pz-title">Rangkai Bungamu</h2>
+      <p class="pz-sub">Seret kepingan ke papan — susun menjadi bunga yang utuh.</p>
+    </div>
+
+    <div class="pz-progress" id="pzProg">
+      <div class="pz-prog-bar"><div class="pz-prog-fill" id="pzFill"></div></div>
+      <span class="pz-prog-txt" id="pzTxt">0/9</span>
+    </div>
+
+    <div class="pz-area" id="pzArea">
+      <div id="pz-board"></div>
+      <div id="pz-tray"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px;">
+      <button class="btn-hint" onclick="pzShowHint()">✦ butuh petunjuk?</button>
+      <p id="pzHintBox" style="display:none;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:1px;background:rgba(242,180,65,.08);border:1px solid rgba(242,180,65,.2);border-radius:10px;padding:8px 14px;max-width:300px;line-height:1.6;text-align:center;margin-top:2px;"></p>
+    </div>
+
+    <div class="pz-success" id="pzSuccess">
+      <div class="pz-success-icon">🌸</div>
+      <p class="pz-success-msg">"Seperti bunga ini, kamu pun tumbuh dari kepingan-kepingan kecil menjadi sesuatu yang menakjubkan."</p>
+      <p class="pz-success-sub">TAMAN TERSUSUN · JIWA MEKAR</p>
+      <button class="btn btn-sg" onclick="go('spz','svg-screen')" style="margin-top:4px;">Rawat Taman Barumu →</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/puzzle-wajah.js"></script>
+
+<!-- SVG VIRTUAL GARDEN -->
+
+
+<div class="screen" id="svg-screen">
+  <div class="vg-wrap">
+    <div style="text-align:center;margin-bottom:10px;">
+      <div class="vg-label">&#10022; TAMAN BULAN &middot; RAWAT</div>
+      <h2 class="vg-title">Tumbuhkan Bungamu</h2>
+      <p class="vg-stage-msg" id="vgMsg">Sentuh taman untuk menyiram...</p>
+    </div>
+    <div class="vg-canvas-wrap" id="vgWrap">
+      <canvas id="vg-canvas" width="280" height="280"></canvas>
+    </div>
+    <div class="vg-dropbar-wrap" id="vgBarWrap">
+      <div class="vg-dropbar-label">
+        <span id="vgStageLbl">TUNAS</span>
+        <span id="vgDropLbl">0 tetes</span>
+      </div>
+      <div class="vg-dropbar-track"><div class="vg-dropbar-fill" id="vgBarFill"></div></div>
+    </div>
+    <div class="vg-tap-hint" id="vgHint">&#10022; sentuh untuk siram &#10022;</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px;" id="vgHintWrap">
+      <button class="btn-hint" onclick="vgShowHint()">&#10022; butuh petunjuk?</button>
+      <p id="vgHintBox" style="display:none;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:1px;background:rgba(242,180,65,.08);border:1px solid rgba(242,180,65,.2);border-radius:10px;padding:8px 14px;max-width:280px;line-height:1.6;text-align:center;margin-top:2px;"></p>
+    </div>
+    <div class="vg-success" id="vgSuccess">
+      <p class="vg-success-quote">"Kamu merawat dengan cinta &mdash; dan lihatlah, taman mekar menjawab."</p>
+      <p class="vg-success-sub">TAMAN MEKAR SEMPURNA &middot; JIWA BERKEMBANG</p>
+      <button class="btn btn-sg" onclick="go('svg-screen','srh')" style="margin-top:6px;">Masuki Ruang Hujan &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/svg-garden.js"></script>
+
+<!-- SRH RUANG HUJAN -->
+
+<div class="screen" id="srh" style="justify-content:center;align-items:center;">
+  <canvas id="rain-canvas"></canvas>
+  <div class="rh-card" id="rh-form-wrap">
+    <div class="rh-title">✦ RUANG HUJAN · MELEPASKAN</div>
+    <h2 class="rh-h">Apa yang Ingin Kamu Lepaskan?</h2>
+    <p class="rh-sub">Tuliskan satu hal dari usia 19 yang sudah tidak perlu kamu bawa lagi — rasa takut, kekecewaan, kebiasaan, atau beban yang sudah terlalu lama tersimpan. Taman akan membantumu melepaskannya.</p>
+    <textarea id="rh-input" placeholder="Aku ingin melepaskan..."></textarea>
+    <button class="rh-btn" onclick="startRain()">Biarkan Hujan Membawanya ✦</button>
+  </div>
+  <div id="rh-done">
+    <div id="rh-done-icon">🌿</div>
+    <p class="rh-done-msg">"Sudah pergi. Taman yang baru menantimu."</p>
+    <p class="rh-done-sub">HUJAN TELAH MEMBAWA PERGI · DEKADE BARU DIMULAI</p>
+    <button class="btn" onclick="goS8()" style="margin-top:8px;border-color:rgba(95,174,219,.4);color:rgba(143,203,234,.85);padding:12px 32px;">Melangkah ke Taman Baru →</button>
+  </div>
+</div>
+
+
+
+<!-- S8 SURAT -->
+<div class="screen" id="s8">
+  <div class="lyrline" id="lyrline"></div>
+  <div class="lscroll" id="lbox"><div id="lparas"></div><div class="lsig" id="lsig"><div class="lsig-name">Rizqi Maulana</div></div></div>
+  <div id="scroll-hint" style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(242,180,65,.4);margin-top:6px;opacity:1;transition:opacity .5s;animation:hintPulse 2s ease-in-out infinite;">↓ surat masih berlanjut...</div>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-bl" id="nfl" onclick="go('s8','sfl')" style="display:none;">Tulis Surat untuk Dirimu →</button>
+    <button id="skip-letter-btn" onclick="skipLetter()" style="display:none;background:transparent;border:1px solid rgba(242,180,65,.3);border-radius:50px;padding:8px 20px;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(242,180,65,.55);cursor:pointer;transition:all .3s;">lewati surat ↓</button>
+  </div>
+</div>
+
+<!-- SFL FUTURE LETTER -->
+<div class="screen" id="sfl">
+  <div class="rbg" style="margin-bottom:14px;max-width:560px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:3px;color:var(--rose);margin-bottom:6px;">✦ UNTUK NAFFA DI TAHUN 2030</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Surat untuk Dirimu<br><span style="color:var(--rose-lt);">di Masa Depan</span></h2>
+    <p style="font-size:.78rem;color:rgba(255,253,247,.6);max-width:420px;margin:8px auto 0;line-height:1.7;">Tulis sepucuk surat untuk Naffa yang akan membacanya di usia 23.</p>
+  </div>
+  <div class="fcard" id="flform">
+    <div class="fshimmer"></div>
+    <div class="fcorner tl"></div><div class="fcorner tr"></div><div class="fcorner bl"></div><div class="fcorner br"></div>
+    <div style="font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(255,253,247,.32);letter-spacing:1.5px;margin-bottom:16px;">[ KEPADA: NAFFA · 2030 · DARI: NAFFA · 2027 ]</div>
+    <div class="flbl">01 · HAL YANG PALING KAMU SYUKURI HARI INI</div>
+    <textarea class="fta" id="fls" maxlength="150" placeholder="Aku bersyukur karena..."></textarea>
+    <div class="flbl">02 · SATU HAL YANG INGIN DICAPAI SEBELUM 23</div>
+    <textarea class="fta" id="flt" maxlength="150" placeholder="Sebelum aku berusia 23, aku ingin..."></textarea>
+    <div class="flbl">03 · PESAN UNTUK NAFFA 3 TAHUN LAGI</div>
+    <textarea class="fta" id="flp" maxlength="200" placeholder="Hei Naffa 2030, aku harap kamu..."></textarea>
+    <button class="btn btn-bl" onclick="sealFL()" style="width:100%;padding:14px;margin-top:6px;font-size:.78rem;">Segel & Kirim ke Masa Depan <svg viewBox="0 0 20 20" width="16" height="16" fill="none" style="vertical-align:middle;display:inline-block"><path d="M14 10a6 6 0 1 1-6-6 4.5 4.5 0 0 0 6 6z" fill="#8FCBEA" opacity=".9"/></svg></button>
+  </div>
+  <div id="flsuc" style="display:none;text-align:center;flex-direction:column;align-items:center;gap:12px;z-index:10;">
+    <div style="font-size:4rem;animation:fglow 3s ease-in-out infinite;"><svg viewBox="0 0 60 60" width="56" height="56" fill="none" style="display:block;margin:0 auto"><path d="M42 30a18 18 0 1 1-18-18 13.5 13.5 0 0 0 18 18z" fill="#8FCBEA" opacity=".85"/><circle cx="38" cy="14" r="2" fill="#F6CB7A" opacity=".7"/><circle cx="44" cy="22" r="1.3" fill="#F6CB7A" opacity=".5"/></svg></div>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--rose-lt);">Surat Tersegel untuk Naffa 2030</p>
+    <p style="font-size:.65rem;font-family:'Space Mono',monospace;color:var(--gold);letter-spacing:1.5px;opacity:.6;">TERSIMPAN DI KEBUN DIGITAL · DIBUKA 2030</p>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.95rem;max-width:380px;color:rgba(255,253,247,.8);line-height:1.7;">"Versi terbaikmu di masa depan sudah tidak sabar menanti semua yang kamu perjuangkan hari ini."</p>
+    <button class="btn btn-bl" onclick="go('sfl','s9')" style="margin-top:8px;padding:12px 38px;">Lanjutkan Perjalanan →</button>
+  </div>
+</div>
+
+<!-- S9 GIFTS -->
+<div class="screen" id="s9">
+  <div class="rbg" style="margin-bottom:14px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:5px;">✦ KOTAK RESTU TAMAN</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Tiga Restu untuk Perjalananmu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:460px;margin:5px auto 0;line-height:1.6;">Buka ketiga kotak restu dari taman sebelum melanjutkan.</p>
+  </div>
+  <div class="grow">
+    <div class="gbox" id="gr" onclick="openG('gr','Kesehatan Raga','🛡️')"><div class="gico"><svg viewBox="0 0 32 32" width="30" height="30" fill="none"><path d="M16 4 L28 8 L28 18 C28 24 22 28 16 30 C10 28 4 24 4 18 L4 8 Z" fill="#F2B441" opacity=".7" stroke="#F6CB7A" stroke-width="1"/><path d="M11 16 L15 20 L21 12" stroke="#FFFDF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="glbl">Raga</div></div>
+    <div class="gbox" id="gj" onclick="openG('gj','Kebahagiaan Jiwa','🌸')"><div class="gico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="11" rx="5" ry="9" fill="#F1A094" opacity=".8"/><ellipse cx="20" cy="11" rx="5" ry="9" fill="#F1A094" opacity=".8" transform="rotate(60 20 20)"/><ellipse cx="20" cy="11" rx="5" ry="9" fill="#F1A094" opacity=".8" transform="rotate(120 20 20)"/><ellipse cx="20" cy="11" rx="5" ry="9" fill="#F1A094" opacity=".8" transform="rotate(180 20 20)"/><ellipse cx="20" cy="11" rx="5" ry="9" fill="#F1A094" opacity=".8" transform="rotate(240 20 20)"/><ellipse cx="20" cy="11" rx="5" ry="9" fill="#F1A094" opacity=".8" transform="rotate(300 20 20)"/><circle cx="20" cy="20" r="5" fill="#FFFDF7"/></svg></div><div class="glbl">Jiwa</div></div>
+    <div class="gbox" id="gb2" onclick="openG('gb2','Kedamaian Batin','🌿')"><div class="gico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 10 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="#5FAEDB" opacity=".8"/><line x1="20" y1="34" x2="20" y2="14" stroke="#8FCBEA" stroke-width="1.5" stroke-linecap="round"/><line x1="20" y1="26" x2="14" y2="20" stroke="#8FCBEA" stroke-width="1" stroke-linecap="round" opacity=".7"/><line x1="20" y1="22" x2="26" y2="18" stroke="#8FCBEA" stroke-width="1" stroke-linecap="round" opacity=".7"/></svg></div><div class="glbl">Batin</div></div>
+  </div>
+  <button class="btn btn-sg" id="n9b" onclick="go9b()" style="display:none;">Lanjutkan →</button>
+</div>
+
+<!-- S9B PARTIKEL -->
+<div class="screen" id="s9b" style="justify-content:center;align-items:center;padding:20px;">
+  <div id="wgl-black-bg" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;background:#000;display:none;"></div>
+  <canvas id="wglflowers" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"></canvas>
+  <button onclick="const bb=document.getElementById('wgl-black-bg');const on=bb.style.display==='none';bb.style.display=on?'block':'none';this.textContent=on?'✦ Kembali ke BG Taman':'🌑 Lihat BG Hitam';" style="position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:12;background:rgba(9,18,32,.6);border:1px solid rgba(242,180,65,.3);color:var(--gold-lt);padding:6px 16px;border-radius:30px;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:1.5px;cursor:pointer;">🌑 Lihat BG Hitam</button>
+  <div id="wgl-hint" style="position:absolute;top:16%;left:50%;transform:translateX(-50%);z-index:5;text-align:center;pointer-events:none;transition:opacity .6s ease;width:90%;max-width:420px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--gold-lt);text-transform:uppercase;">✦ Ketuk Layar</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--cream);margin-top:6px;line-height:1.4;">Tumbuhkan 20 Bunga di Tamanmu</h2>
+  </div>
+  <canvas id="usc" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;opacity:.25;"></canvas>
+  <div id="asmwrap" style="position:absolute;bottom:70px;left:50%;transform:translateX(-50%);width:220px;z-index:10;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--sage);letter-spacing:2px;text-align:center;margin-bottom:6px;" id="asmpct">🌸 0/20 BUNGA</div>
+    <div style="width:100%;height:2px;background:rgba(127,174,106,.15);border-radius:2px;overflow:hidden;"><div id="asmbar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--sage),var(--gold));border-radius:2px;transition:width .3s ease;"></div></div>
+  </div>
+  <button class="btn btn-sg" id="n9c" onclick="goS10()" style="display:none;position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:10;">Lanjutkan ke Tiup Lilin →</button>
+</div>
+
+<!-- Shader untuk canvas bunga WebGL (dipakai oleh initWebGLFlowers) -->
+<script type="x-shader/x-fragment" id="wgl-fragment-shader">
+#define PI 3.14159265359
+uniform float u_ratio;
+uniform vec2 u_cursor;
+uniform float u_stop_time;
+uniform float u_clean;
+uniform vec2 u_stop_randomizer;
+uniform sampler2D u_texture;
+varying vec2 vUv;
+
+vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+float snoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+    vec2 i = floor(v + dot(v, C.yy));
+    vec2 x0 = v - i + dot(i, C.xx);
+    vec2 i1;
+    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod289(i);
+    vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+    vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+    m = m*m; m = m*m;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 ox = floor(x + 0.5);
+    vec3 a0 = x - ox;
+    m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+    vec3 g;
+    g.x = a0.x * x0.x + h.x * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    return 130.0 * dot(m, g);
+}
+
+// Siklus 4 warna dari palet situs (coral/mustard/grass/sky) berdasarkan t (0..1) —
+// dipakai supaya tiap bunga bisa dapat kombinasi warna yang beda-beda, bukan cuma 2 warna.
+vec3 quad_palette_mix(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
+    float tt = clamp(t, 0., 1.) * 3.0;
+    vec3 res = mix(a, b, clamp(tt, 0., 1.));
+    res = mix(res, mix(b, c, clamp(tt - 1.0, 0., 1.)), step(1.0, tt));
+    res = mix(res, mix(c, d, clamp(tt - 2.0, 0., 1.)), step(2.0, tt));
+    return res;
+}
+
+float get_flower_shape(vec2 _p, float _pet_n, float _angle, float _outline) {
+    _angle *= 3.;
+    _p = vec2(_p.x * cos(_angle) - _p.y * sin(_angle), _p.x * sin(_angle) + _p.y * cos(_angle));
+    float a = atan(_p.y, _p.x);
+    float flower_sectoral_shape = pow(abs(sin(a * _pet_n)), .4) + .25;
+    vec2 flower_size_range = vec2(.03, .1);
+    float size = flower_size_range[0] + u_stop_randomizer[0] * flower_size_range[1];
+    float flower_radial_shape = pow(length(_p) / size, 2.);
+    flower_radial_shape -= .1 * sin(8. * a);
+    flower_radial_shape = max(.1, flower_radial_shape);
+    flower_radial_shape += smoothstep(0., 0.03, -_p.y + .2 * abs(_p.x));
+    float grow_time = step(.25, u_stop_time) * pow(u_stop_time, .3);
+    float flower_shape = 1. - smoothstep(0., flower_sectoral_shape, _outline * flower_radial_shape / grow_time);
+    flower_shape *= (1. - step(1., grow_time));
+    return flower_shape;
+}
+
+float get_stem_shape(vec2 _p, vec2 _uv, float _w, float _angle) {
+    _w = max(.004, _w);
+    float x_offset = _p.y * sin(_angle);
+    x_offset *= pow(3. * _uv.y, 2.);
+    _p.x -= x_offset;
+    float noise_power = .5;
+    float cursor_horizontal_noise = noise_power * snoise(2. * _uv * u_stop_randomizer[0]);
+    cursor_horizontal_noise *= pow(dot(_p.y, _p.y), .6);
+    cursor_horizontal_noise *= pow(dot(_uv.y, _uv.y), .3);
+    _p.x += cursor_horizontal_noise;
+    float left = smoothstep(-_w, 0., _p.x);
+    float right = 1. - smoothstep(0., _w, _p.x);
+    float stem_shape = left * right;
+    float grow_time = 1. - smoothstep(0., .2, u_stop_time);
+    float stem_top_mask = smoothstep(0., pow(grow_time, .5), .03 -_p.y);
+    stem_shape *= stem_top_mask;
+    stem_shape *= (1. - step(.17, u_stop_time));
+    return stem_shape;
+}
+
+void main() {
+    vec4 baseTex = texture2D(u_texture, vUv);
+    vec3 base = baseTex.xyz;
+    float base_alpha = baseTex.a;
+    vec2 uv = vUv;
+    uv.x *= u_ratio;
+    vec2 cursor = vUv - u_cursor.xy;
+    cursor.x *= u_ratio;
+    // Palet disesuaikan dengan tema situs (navy + mustard/emas + coral + grass),
+    // menggantikan magenta/ungu/kuning-neon bawaan shader aslinya.
+    vec3 c_coral=vec3(.91,.38,.30), c_mustard=vec3(.95,.71,.25), c_grass=vec3(.50,.68,.42), c_sky=vec3(.37,.68,.86);
+    vec3 stem_color = mix(c_grass, c_mustard, .3 * u_stop_randomizer[0]);
+    vec3 flower_color = quad_palette_mix(c_coral, c_mustard, c_grass, c_sky, u_stop_randomizer[1]);
+    vec3 flower_color_back = quad_palette_mix(c_sky, c_grass, c_mustard, c_coral, u_stop_randomizer[0]);
+    float angle = .5 * (u_stop_randomizer[0] - .5);
+    float stem_shape = get_stem_shape(cursor, uv, .003, angle);
+    stem_shape += get_stem_shape(cursor + vec2(0., .2 + .5 * u_stop_randomizer[0]), uv, .003, angle);
+    float stem_mask = 1. - get_stem_shape(cursor, uv, .004, angle);
+    stem_mask -= get_stem_shape(cursor + vec2(0., .2 + .5 * u_stop_randomizer[0]), uv, .004, angle);
+    float petals_back_number = 1. + floor(u_stop_randomizer[0] * 2.);
+    float angle_offset = -(2. * step(0., angle) - 1.) * .1 * u_stop_time;
+    float flower_back_shape = get_flower_shape(cursor, petals_back_number, angle + angle_offset, 1.5);
+    float flower_back_mask = 1. - get_flower_shape(cursor, petals_back_number, angle + angle_offset, 1.6);
+    float petals_front_number = 2. + floor(u_stop_randomizer[1] * 2.);
+    float flower_front_shape = get_flower_shape(cursor, petals_front_number, angle, 1.);
+    float flower_front_mask = 1. - get_flower_shape(cursor, petals_front_number, angle, .95);
+    vec3 color = base;
+    color *= stem_mask;
+    color *= flower_back_mask;
+    color *= flower_front_mask;
+    color += (stem_shape * stem_color);
+    color += (flower_back_shape * flower_color_back);
+    color += (flower_front_shape * flower_color);
+    color *= u_clean;
+
+    // alpha ikut menumpuk hanya di area yang benar-benar digambar (batang/bunga) —
+    // area kosong tetap transparan supaya background utama tampil di baliknya
+    float alpha = base_alpha;
+    alpha *= stem_mask;
+    alpha *= flower_back_mask;
+    alpha *= flower_front_mask;
+    alpha = max(alpha, stem_shape);
+    alpha = max(alpha, flower_back_shape);
+    alpha = max(alpha, flower_front_shape);
+    alpha *= u_clean;
+
+    gl_FragColor = vec4(color, clamp(alpha, 0., 1.));
+}
+</script>
+<script type="x-shader/x-vertex" id="wgl-vertex-shader">
+varying vec2 vUv;
+void main() {
+    vUv = uv;
+    gl_Position = vec4(position, 1.);
+}
+</script>
+
+<!-- S10 LILIN -->
+<div class="screen" id="s10">
+  <div class="rbg" style="margin-bottom:16px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:5px;">✦ TIUP LILINMU</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Make A Wish, Naffa.</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.65);max-width:420px;margin:8px auto 0;line-height:1.7;">Pejamkan matamu, bayangkan impian terbesarmu, lalu tiup mikrofon untuk meniup lilinnya.</p>
+  </div>
+
+  <!-- Mic permission button — shown first -->
+  <div id="mic-gate" style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px;">
+    <button onclick="requestMicThenStart()" style="font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:2px;padding:12px 28px;background:transparent;border:1px solid rgba(242,180,65,.4);border-radius:30px;color:var(--gold-lt);cursor:pointer;transition:all .3s ease;" onmouseover="this.style.background='rgba(242,180,65,.1)'" onmouseout="this.style.background='transparent'">
+      ✦ izinkan mikrofon untuk tiup lilin
+    </button>
+    <p style="font-family:'Space Mono',monospace;font-size:.62rem;color:rgba(255,253,247,.5);letter-spacing:1px;">atau ketuk kue untuk meniup tanpa mikrofon</p>
+  </div>
+
+  <!-- ANIMATED BIRTHDAY CAKE — SVG path-morph identik dengan referensi (direcolor ke tema Taman Bulan),
+       + canvas overlay untuk lilin/api/asap/kelopak yang tetap dikendalikan JS (mic-blow, flicker, dst) -->
+  <div id="cake-wrap" onclick="blowManual()" style="cursor:pointer;position:relative;width:min(320px,85vw);margin:0 auto;aspect-ratio:200/180;border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 58%, rgba(242,180,65,.08), transparent 55%),linear-gradient(#0C1626,#101E33);opacity:0;transform:translateY(40px) scale(.95);transition:opacity 1.2s cubic-bezier(.2,.8,.3,1),transform 1.2s cubic-bezier(.2,.8,.3,1);">
+    <svg id="cake-svg" viewBox="0 330 200 180" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;" xml:space="preserve">
+      <path fill="#F2B441" d="M173.667-13.94c-49.298,0-102.782,0-147.334,0c-3.999,0-4-16.002,0-16.002
+        c44.697,0,96.586,0,147.334,0C177.667-29.942,177.668-13.94,173.667-13.94z">
+        <animate id="bizcocho_3" attributeName="d" calcMode="spline" keySplines="0 0 1 1; 0 0 1 1" begin="relleno_2.end" dur="0.3s" fill="freeze" values="
+                          M173.667-13.94c-49.298,0-102.782,0-147.334,0c-3.999,0-4-16.002,0-16.002
+        c44.697,0,96.586,0,147.334,0C177.667-29.942,177.668-13.94,173.667-13.94z
+                          ;
+                          M173.667,411.567c-47.995,12.408-102.955,12.561-147.334,0
+        c-3.848-1.089-0.189-16.089,3.661-15.002c44.836,12.66,90.519,12.753,139.427,0.07
+        C173.293,395.631,177.541,410.566,173.667,411.567z
+                          ;
+                          M173.667,427.569c-49.795,0-101.101,0-147.334,0c-3.999,0-4-16.002,0-16.002
+        c46.385,0,97.539,0,147.334,0C177.668,411.567,177.667,427.569,173.667,427.569z
+                          " />
+      </path>
+      <path fill="#a07030" d="M100-178.521c1.858,0,3.364,1.506,3.364,3.363c0,0,0,33.17,0,44.227
+        c0,19.144,0,57.431,0,76.574c0,10.152,0,40.607,0,40.607c0,1.858-1.506,3.364-3.364,3.364l0,0c-1.858,0-3.364-1.506-3.364-3.364c0,0,0-30.455,0-40.607c0-19.144,0-57.432,0-76.575c0-11.057,0-44.226,0-44.226C96.636-177.015,98.142-178.521,100-178.521
+        L100-178.521z">
+        <animate id="relleno_2" attributeName="d" calcMode="spline" keySplines="0 0 1 1; 0 0 1 1; 0 0 0.58 1" begin="bizcocho_2.end" dur="0.5s" fill="freeze" values="
+                          M100-178.521c1.858,0,3.364,1.506,3.364,3.363c0,0,0,33.17,0,44.227
+        c0,19.144,0,57.431,0,76.574c0,10.152,0,40.607,0,40.607c0,1.858-1.506,3.364-3.364,3.364l0,0c-1.858,0-3.364-1.506-3.364-3.364c0,0,0-30.455,0-40.607c0-19.144,0-57.432,0-76.575c0-11.057,0-44.226,0-44.226C96.636-177.015,98.142-178.521,100-178.521
+        L100-178.521z
+                          ;
+                          M100,267.257c1.858,0,3.364,1.506,3.364,3.363c0,0,0,33.17,0,44.227
+        c0,19.143,0,57.43,0,76.574c0,10.151,0,40.606,0,40.606c0,1.858-1.506,3.364-3.364,3.364l0,0c-1.858,0-3.364-1.506-3.364-3.364
+        c0,0,0-30.455,0-40.606c0-19.145,0-57.432,0-76.576c0-11.057,0-44.225,0-44.225C96.636,268.763,98.142,267.257,100,267.257
+        L100,267.257z
+                          ;
+                          M93.928,405.433c-0.655,6.444-0.102,9.067,2.957,11.798c0,0,8.083,5.571,16.828,3.503
+        c18.629-4.406,43.813,6.194,50.792,7.791c14.75,3.375,9.162,6.867,9.162,6.867c-2.412,2.258-58.328,0-73.667,0l0,0
+        c-1.858,0-69.995,2.133-73.667,0c0,0-3.337-2.439,6.172-5.992c11.375-4.25,52.875,8.822,47.139-9.442
+        c-6.333-20.167,5.226-21.514,5.226-21.514c3.435-0.915,12.78-6.663,10.923-0.546L93.928,405.433z
+                          ;
+                          M102.242,427.569c5.348,0,14.079,0,17.462,0c0,0,17.026,0,27.504,0
+        c19.143,0,20.39-3.797,26.459,0c3,1.877,0,7.823,0,7.823c-2.412,2.258-58.328,0-73.667,0l0,0c-1.858,0-67.187,0-73.667,0
+        c0,0-4.125-4.983,0-7.823c5.201-3.58,16.085,0,23.725,0c8.841,0,20.762,0,20.762,0c3.686,0,8.597,0,19.511,0H102.242z
+                          " />
+      </path>
+      <path fill="#F2B441" d="M173.667-15.929c-46.512,0-105.486,0-147.334,0c-3.999,0-4-16.002,0-16.002
+        c43.566,0,97.96,0,147.334,0C177.667-31.931,177.666-15.929,173.667-15.929z">
+        <animate id="bizcocho_2" attributeName="d" calcMode="spline" keySplines="0 0 1 1; 0 0 1 1; 0.25 0 0.58 1" begin="relleno_1.end" dur="0.5s" fill="freeze" values="
+                          M173.667-15.929c-46.512,0-105.486,0-147.334,0c-3.999,0-4-16.002,0-16.002
+        c43.566,0,97.96,0,147.334,0C177.667-31.931,177.666-15.929,173.667-15.929z
+                          ;
+                          M173.434,445.393c-47.269,8.001-105.245,8.001-147.334,0c-3.929-0.747-0.692-16.543,3.243-15.824
+        c43.828,8.001,92.165,8.001,140.739,0C174.029,428.918,177.377,444.726,173.434,445.393z
+                          ;
+                          M173.667,449.514c-47.576-5.454-102.799-5.744-147.333,0c-3.966,0.512-3.938-15.297,0-16.002
+        c43.683-7.823,97.646-8.026,147.333,0C177.616,434.15,177.642,449.969,173.667,449.514z
+                          ;
+                          M173.667,451.394c-49.298,0-102.782,0-147.334,0c-3.999,0-4-16.002,0-16.002
+        c44.697,0,96.586,0,147.334,0C177.667,435.392,177.668,451.394,173.667,451.394z
+                          " />
+      </path>
+      <path fill="#a07030" d="M101.368-73.685c0,12.164,0,15.18,0,28.519c0,22.702,0-13.661,0,8.304c0,14.48,0,18.233,0,30.512
+        c0,1.753-2.958,1.847-2.958,0c0-12.68,0-16.277,0-30.401c0-21.983,0,11.66,0-8.305c0-13.027,0-15.992,0-28.628
+        C98.411-75.883,101.368-75.592,101.368-73.685z">
+        <animate id="relleno_1" attributeName="d" calcMode="spline" keySplines="0 0 1 1; 0 0 1 1; 0 0 0.6 1" begin="bizcocho_1.end" dur="0.5s" fill="freeze" values="
+                          M101.368-73.685c0,12.164,0,15.18,0,28.519c0,22.702,0-13.661,0,8.304c0,14.48,0,18.233,0,30.512
+        c0,1.753-2.958,1.847-2.958,0c0-12.68,0-16.277,0-30.401c0-21.983,0,11.66,0-8.305c0-13.027,0-15.992,0-28.628
+        C98.411-75.883,101.368-75.592,101.368-73.685z
+                          ;
+                          M101.368,350.885c0,12.164,0,65.18,0,78.518c0,22.703,0-33.66,0-11.695c0,14.48,0,28.232,0,40.512
+        c0,1.753-2.958,1.847-2.958,0c0-12.68,0-26.277,0-40.402c0-21.982,0,31.66,0,11.695c0-13.027,0-65.992,0-78.627
+        C98.411,348.686,101.368,348.977,101.368,350.885z
+                          ;
+                          M128.38,447.567c37.626,6.312,39.303,13.658,26.833,12.833c-22.653-1.499-13.636-0.831-23.302-0.831
+        c-14.48,0-17.884,0-30.163,0c-2.087,0-2.068,0-3.915,0c-13.333,0-8.963,0-23.088,0c-11.668,0-14.062,5.995-27.532,1.164
+        c-12.629-4.529,38.667-3.167,46.833-17.333C100.077,432.94,105.546,443.736,128.38,447.567z
+                          ;
+                          M173.667,451.394c2.875,0,2.997,9.257,0,9.131c-22.662-0.956-32.09-0.956-41.756-0.956
+        c-14.48,0-17.884,0-30.163,0c-2.087,0-2.068,0-3.915,0c-13.333,0-8.963,0-23.088,0c-11.668,0-34.99-0.294-48.412,1.831
+        c-4.109,0.65-3.01-10.006,0-10.006C37.129,451.394,149.379,451.394,173.667,451.394z
+                          " />
+      </path>
+      <path fill="#F2B441" d="M173.667,21.571c-33.174,0-111.467,0-147.334,0c-4,0-4-16.002,0-16.002c39.836,0,105.982,0,147.334,0
+        C177.668,5.569,177.667,21.571,173.667,21.571z">
+        <animate id="bizcocho_1" attributeName="d" calcMode="spline" keySplines="0 0 1 1; 0 0 1 1; 0 0 1 1; 0.25 0 1 1; 0 0 1 1; 0.25 0 0.6 1" begin="2s" dur="0.8s" fill="freeze" values="
+                          M173.667,21.571c-33.174,0-111.467,0-147.334,0c-4,0-4-16.002,0-16.002c39.836,0,105.982,0,147.334,0
+        C177.668,5.569,177.667,21.571,173.667,21.571z
+                          ;
+                          M173.667,459.569c-33.197,16.002-110.782,16.002-147.334,0c-3.664-1.604,1.614-15.617,5.337-14.153
+        c40.702,16.002,94.289,16.104,136.505,0.103C171.917,444.1,177.271,457.832,173.667,459.569z
+                          ;
+                          M171.817,475.571c-39.361-3.001-105.438-2.571-143.556,0c-3.991,0.27-7.377-14.736-3.387-15.014
+        c41.553-2.888,104.421-3.121,150.51-0.233C179.378,460.574,175.806,475.875,171.817,475.571z
+                          ;
+                          M171.817,459.564c-38.8-12.188-104.504-13.762-143.556,0c-3.772,1.329-7.961-12.604-4.178-13.905
+        c40.864-14.064,105.114-15.52,151.918-0.973C179.822,445.874,175.634,460.762,171.817,459.564z
+                          ;
+                          M173.667,475.571c-46.376-5.005-105.924-4.003-147.334,0c-3.981,0.385-3.479-15.421,0.479-16.002
+        c43.087-6.327,97.705-7.083,146.855,0.438C177.621,460.613,177.644,476,173.667,475.571z
+                          ;
+                          M173.667,474.117c-46.376,1.866-105.638,2.01-147.334,0c-3.995-0.192-3.52-16.144,0.479-16.002
+        c43.794,1.55,96.341,1.541,145.723,0C176.532,457.99,177.663,473.956,173.667,474.117z
+                          ;
+                          M173.667,475.571c-46.512,0-105.486,0-147.334,0c-3.999,0-4-16.002,0-16.002c43.566,0,97.96,0,147.334,0
+        C177.667,459.569,177.666,475.571,173.667,475.571z
+                          " />
+      </path>
+      <path fill="#fff8e0" d="M104.812,113.216c0,3.119-2.164,5.67-4.812,5.67c-2.646,0-4.812-2.551-4.812-5.67c0-5.594,0-16.782,0-22.375
+        c0-5.143,0-15.427,0-20.568c0-7.333,0-21.998,0-29.33c0-5.523,0-16.569,0-22.092c0-3.295,0-9.885,0-13.181
+        C95.188,2.551,97.353,0,100,0c2.648,0,4.812,2.551,4.812,5.669c0,3.248,0,9.743,0,12.991c0,5.428,0,16.284,0,21.711
+        c0,7.618,0,22.854,0,30.472c0,4.952,0,14.854,0,19.807C104.812,96.292,104.812,107.576,104.812,113.216z">
+        <animate id="crema" attributeName="d" calcMode="spline" keySplines="0 0 1 1; 0 0 1 1; 0 0 1 1; 0.25 0 1 1; 0 0 1 1; 0 0 0.58 1" begin="bizcocho_3.end" dur="2s" fill="freeze" values="
+                          M104.812,113.216c0,3.119-2.164,5.67-4.812,5.67c-2.646,0-4.812-2.551-4.812-5.67c0-5.594,0-16.782,0-22.375
+        c0-5.143,0-15.427,0-20.568c0-7.333,0-21.998,0-29.33c0-5.523,0-16.569,0-22.092c0-3.295,0-9.885,0-13.181
+        C95.188,2.551,97.353,0,100,0c2.648,0,4.812,2.551,4.812,5.669c0,3.248,0,9.743,0,12.991c0,5.428,0,16.284,0,21.711
+        c0,7.618,0,22.854,0,30.472c0,4.952,0,14.854,0,19.807C104.812,96.292,104.812,107.576,104.812,113.216z
+                          ;
+                          M104.812,405.897c0,3.119-2.164,5.67-4.812,5.67c-2.646,0-4.812-2.551-4.812-5.67c0-5.594,0-16.782,0-22.376
+        c0-5.143,0-15.426,0-20.568c0-7.332,0-21.997,0-29.33c0-5.522,0-16.568,0-22.092c0-3.295,0-9.885,0-13.181
+        c0-3.118,2.165-5.669,4.812-5.669c2.648,0,4.812,2.551,4.812,5.669c0,3.247,0,9.743,0,12.991c0,5.428,0,16.283,0,21.711
+        c0,7.618,0,22.854,0,30.473c0,4.951,0,14.854,0,19.807C104.812,388.972,104.812,400.256,104.812,405.897z
+                          ;
+                          M111.873,411.567c-3.119,0-9.226,0-11.874,0c-2.646,0-7.748,0-10.867,0c-7.086,0-12.698,0-18.292,0
+        c-6.592,0-12.871,7.371-19.166,3.008c-10.043-6.961-7.776-10.169,2.991-17.745c12.61-8.873,27.713,1.994,25.919-7.531
+        c-2.589-13.742,11.008-14.513,11.365-17.789c0.441-4.051,4.235-11.107,8.051-8.175c3.113,2.393,1.007,8.008,0,13.159
+        c-1.871,9.569,8.058,2.113,9.494,14.155c2.592,21.732,21.184-0.675,29.309,7.976c5.216,5.553,18.413,5.552,15.426,12.942
+        c-3.131,7.745-15.825-4.369-23.8,2.903C126.261,418.271,118.301,411.567,111.873,411.567z
+                          ;
+                          M111.873,411.567c-3.119,0-9.226,0-11.874,0c-2.646,0-9.734,4.069-12.853,4.069
+        c-7.086,0-10.712-4.069-16.306-4.069c-6.592,0-12.12,6.013-19.166,3.008c-7.053-3.008-7.458,2.026-18.659,1.165
+        c-6.832-0.525-7.522-3.034-7.533-6.265c-0.037-10.336,22.073-2.452,36.613-2.628c10.234-0.124,19.856-1.439,37.905-2.102
+        c16.642-0.61,32.699,1.552,46.009,1.927c12.438,0.351,29.663-8.99,31.532,3.315c0.773,5.093-5.605,3.342-11.211,9.579
+        c-5.093,5.667-7.59-4.605-12.965-3.832c-8.269,1.189-14.962-8.537-22.937-1.265C126.261,418.271,118.301,411.567,111.873,411.567z
+                          ;
+                          M110.946,413.652c-2.904-1.137-8.405-2.748-12.446-0.97c-6.099,2.685-7.273,10.358-13.253,8.242
+        c-7.843-2.775-8.953-5.008-14.546-5.01c-24.653-0.011-4.849,26.507-18.264,26.507c-12.377,0,5.791-33.537-19.422-26.682
+        c-7.703,2.095-9.806-0.942-9.817-4.173c-0.037-10.336,24.357-4.544,38.897-4.72c10.234-0.124,19.856-1.439,37.905-2.102
+        c16.642-0.61,32.699,1.552,46.009,1.927c12.438,0.351,28.973-8.865,31.532,3.315c1.449,6.896,0.318,15.624-3.874,15.624
+        c-7.619,0-1.788-15.192-19.243-7.111c-7.581,3.51-15.963-9.738-26.669,1.066C120.644,426.744,118.381,416.561,110.946,413.652z
+                          ;
+                          M111.547,413.9c-2.969-0.956-8.775-0.949-13.167-0.5c-14.667,1.5-8.325,16.508-14.667,16.666
+        c-6.667,0.166-0.167-13.5-13.013-14.151c-30.471-1.545-5.572,46.651-18.987,46.651c-12.377,0,10.333-50.166-18.667-44.5
+        c-7.835,1.531-9.537-1.417-9.548-4.647c-0.037-10.336,23.675-5.177,38.215-5.353c10.234-0.124,20.618-1.671,38.667-2.333
+        c16.642-0.61,32.023,1.458,45.333,1.833c12.438,0.351,33.819-8.431,33.199,4.001c-0.532,10.666,0.414,26.166-5.245,25.833
+        c-7.606-0.447-2.954-31.5-19.243-18.899c-7.985,6.177-17.658-5.969-27.377,5.732C118.88,434.066,121.38,417.067,111.547,413.9z
+                          ;
+                          M111.547,415.233c-6.667-0.834-9.667,4.667-13.833,3.333c-19.649-6.291-8.158,22.176-14.5,22.334
+        c-6.667,0.166,2.833-18-13.333-22.167c-29.544-7.615-9.667,43.833-20.167,43.833c-10.333,0,8.004-55.006-16.833-39
+        c-7.5,4.833-9.508-3.78-9.299-7.004c0.799-12.329,23.592-7.153,38.132-7.329c10.234-0.124,20.238-1.505,38.287-2.167
+        c16.642-0.61,32.903,1.125,46.213,1.5c12.438,0.351,35.058-5.579,31.863,6.451c-5.532,20.833,1.25,28.216-4.409,27.883
+        c-7.606-0.447-6.058-37.895-20.62-23.333c-10.167,10.166-15.972-0.747-25,12C119.547,443.568,121.798,416.515,111.547,415.233z
+                          " />
+      </path>
+      <rect x="10" y="475.571" fill="#fff8e0" width="180" height="4" />
+    </svg>
+    <canvas id="cake-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;"></canvas>
+    <div id="cake-tap-hint" style="position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:.62rem;color:rgba(255,253,247,.5);letter-spacing:2px;white-space:nowrap;animation:hintPulse 2s ease-in-out infinite;">
+      ✦ ketuk kue untuk meniup ✦
+    </div>
+  </div>
+  
+</div>
+
+<!-- S11 CELEBRATION -->
+<div class="screen" id="s11">
+  <!-- Canvas for live confetti behind content -->
+  <canvas id="s11-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;padding:0 20px;">
+
+    <!-- Top badge -->
+    <div style="font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:5px;color:var(--rose-lt);margin-bottom:18px;opacity:.8;
+      background:rgba(232,96,76,.12);border:1px solid rgba(232,96,76,.25);border-radius:30px;padding:6px 20px;">
+      ✦ SELAMAT ULANG TAHUN KE-20 ✦
+    </div>
+
+    <!-- BIG NUMBER -->
+    <div style="position:relative;line-height:1;margin-bottom:6px;">
+      <!-- decorative ring behind 20 -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+        width:min(55vw,260px);height:min(55vw,260px);border-radius:50%;
+        background:radial-gradient(circle,rgba(242,180,65,.12) 0%,transparent 70%);
+        border:1px solid rgba(242,180,65,.15);pointer-events:none;"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(5rem,22vw,10rem);font-weight:600;
+        color:transparent;
+        background:linear-gradient(135deg,#F6CB7A 0%,#fff8e0 40%,#F2B441 70%,#F6CB7A 100%);
+        -webkit-background-clip:text;background-clip:text;
+        text-shadow:none;
+        filter:drop-shadow(0 0 30px rgba(242,180,65,.5));
+        letter-spacing:-.02em;line-height:1;">20</div>
+    </div>
+
+    <!-- HAPPY -->
+    <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(1.4rem,5vw,2.6rem);font-weight:400;
+      letter-spacing:.3em;color:rgba(255,253,247,.9);margin-bottom:4px;text-transform:uppercase;">
+      Happy Birthday
+    </div>
+
+    <!-- Name with decorative lines -->
+    <div style="display:flex;align-items:center;gap:14px;margin:8px 0 20px;">
+      <div style="height:1px;width:40px;background:linear-gradient(to right,transparent,rgba(232,96,76,.5));"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;
+        font-size:clamp(1.6rem,5vw,2.4rem);font-weight:400;
+        color:var(--rose-lt);text-shadow:0 0 30px rgba(232,96,76,.4);">
+        Naffa Febry Cornelia
+      </div>
+      <div style="height:1px;width:40px;background:linear-gradient(to left,transparent,rgba(232,96,76,.5));"></div>
+    </div>
+
+    <!-- SVG bloom buttons grid -->
+    <div class="padgrid" style="margin:0 0 16px;gap:12px;">
+      <button class="padbtn" aria-label="Rose Bloom — efek bunga mawar mekar" onclick="showBloom('#E8604C');s11Burst('#E8604C')">
+        <svg viewBox="0 0 28 28" width="20" height="20" fill="none" style="vertical-align:middle;margin-right:6px"><ellipse cx="14" cy="6" rx="3.5" ry="6" fill="#F1A094" opacity=".9"/><ellipse cx="14" cy="6" rx="3.5" ry="6" fill="#F1A094" opacity=".9" transform="rotate(60 14 14)"/><ellipse cx="14" cy="6" rx="3.5" ry="6" fill="#F1A094" opacity=".9" transform="rotate(120 14 14)"/><ellipse cx="14" cy="6" rx="3.5" ry="6" fill="#F1A094" opacity=".9" transform="rotate(180 14 14)"/><ellipse cx="14" cy="6" rx="3.5" ry="6" fill="#F1A094" opacity=".9" transform="rotate(240 14 14)"/><ellipse cx="14" cy="6" rx="3.5" ry="6" fill="#F1A094" opacity=".9" transform="rotate(300 14 14)"/><circle cx="14" cy="14" r="4" fill="#FFFDF7"/></svg>
+        ROSE BLOOM
+      </button>
+      <button class="padbtn" aria-label="Gold Spark — efek percikan emas" onclick="showBloom('#F2B441');s11Burst('#F2B441')">
+        <svg viewBox="0 0 28 28" width="20" height="20" fill="none" style="vertical-align:middle;margin-right:6px"><path d="M14 3 L15.8 10.5 L23 11.2 L17.5 16.3 L19.4 23.5 L14 19.8 L8.6 23.5 L10.5 16.3 L5 11.2 L12.2 10.5Z" fill="#F6CB7A" opacity=".95"/></svg>
+        GOLD SPARK
+      </button>
+      <button class="padbtn" aria-label="Sage Wave — efek gelombang hijau daun" onclick="showBloom('#7FAE6A');s11Burst('#7FAE6A')">
+        <svg viewBox="0 0 28 28" width="20" height="20" fill="none" style="vertical-align:middle;margin-right:6px"><path d="M14 24C14 24 5 18 5 11C5 7 8.5 4 12 5.5C13 6 13.5 7 14 8.5C14.5 7 15 6 16 5.5C19.5 4 23 7 23 11C23 18 14 24 14 24Z" fill="#7FAE6A" opacity=".85"/><line x1="14" y1="24" x2="14" y2="11" stroke="#B2CEA6" stroke-width="1.2" stroke-linecap="round"/></svg>
+        SAGE WAVE
+      </button>
+      <button class="padbtn" aria-label="Moon Glow — efek cahaya rembulan" onclick="showBloom('#5FAEDB');s11Burst('#5FAEDB')">
+        <svg viewBox="0 0 28 28" width="20" height="20" fill="none" style="vertical-align:middle;margin-right:6px"><path d="M20 14a8 8 0 1 1-8-8 6 6 0 0 0 8 8z" fill="#8FCBEA" opacity=".9"/><circle cx="18" cy="8" r="1.2" fill="#F6CB7A" opacity=".7"/></svg>
+        MOON GLOW
+      </button>
+    </div>
+
+    <!-- Badges -->
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:20px;">
+      <span class="minibadge" style="color:var(--sage);">✦ Manifestasi Tumbuh</span>
+      <span class="minibadge" id="dynbadge" style="color:var(--gold);">✦ Kedamaian Jiwa</span>
+      <span class="minibadge" style="color:var(--rose);">✦ Resiliensi Batin</span>
+    </div>
+
+    <button class="btn btn-bl" onclick="go('s11','sphoto');setTimeout(initPhotobooth,700);" style="padding:14px 40px;font-size:.75rem;">
+      Abadikan Momen Ini →
+    </button>
+  </div>
+</div>
+
+<!-- SPHOTO PHOTOBOOTH — kamera dengan pilihan mode, filter, dan bingkai -->
+<div class="screen" id="sphoto">
+  <div class="rbg" style="margin-bottom:6px;max-width:560px;">
+    <div style="font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:3px;color:var(--gold);margin-bottom:2px;">✦ BILIK FOTO TAMAN</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:var(--cream);margin:0;">Abadikan Wajahmu di <span style="color:var(--gold-lt);">Taman Bulan</span></h2>
+    <p id="pb-sub" style="font-size:.7rem;color:rgba(255,253,247,.55);max-width:420px;margin:4px auto 0;line-height:1.5;">Pilih gaya fotomu, lalu jepret.</p>
+  </div>
+
+  <!-- Panel pilihan: bisa dilipat supaya kamera & preview selalu muat 1 layar -->
+  <div id="pb-options-toggle" class="pb-options-toggle" onclick="pbToggleOptionsPanel()">
+    <span id="pb-options-summary">🎵 About You · Natural</span>
+    <span id="pb-options-caret">▼ tampilkan</span>
+  </div>
+  <div id="pb-options" class="pb-options collapsed">
+    <div class="pb-optgroup">
+      <div class="pb-optlabel">1 · PILIH TEMPLATE</div>
+      <!-- Daftar template otomatis diambil dari PB_CUSTOM_TEMPLATES di JS —
+           digeser satu-satu pakai panah, bukan grid/scroll lagi. -->
+      <div class="pb-template-carousel">
+        <button class="pb-carousel-arrow" onclick="pbCycleTemplate(-1)" aria-label="Template sebelumnya">‹</button>
+        <button class="pb-opt active pb-template-current" id="pb-template-current-btn" data-group="frame"></button>
+        <button class="pb-carousel-arrow" onclick="pbCycleTemplate(1)" aria-label="Template berikutnya">›</button>
+      </div>
+      <div class="pb-template-dots" id="pb-template-dots"></div>
+    </div>
+  </div>
+
+  <!-- Kamera + preview live berdampingan -->
+  <div id="pb-stage-grid" class="pb-stage-grid">
+    <div class="pb-cam-col">
+      <div id="pb-camwrap" class="pb-camwrap">
+        <video id="pb-video" autoplay playsinline muted></video>
+        <!-- HUD dekoratif ala kamera digital -->
+        <div class="pb-hud-top">
+          <div id="pb-rec-badge" class="pb-rec-badge"><span class="pb-rec-dot"></span>REC</div>
+          <div class="pb-hud-controls">
+            <button class="pb-hud-btn active" id="pb-mirror-btn" onclick="pbToggleMirror()" title="Cermin">⇋ MIRROR</button>
+            <button class="pb-hud-btn" id="pb-flip-btn" onclick="pbToggleFlip()" title="Ganti kamera">↻ FLIP</button>
+            <button class="pb-hud-btn" id="pb-flash-btn" onclick="pbToggleFlash()" title="Flash">⚡ FLASH</button>
+            <button class="pb-hud-btn" id="pb-filter-btn" onclick="pbCycleFilter()" title="Gaya filter">🎨 NATURAL</button>
+          </div>
+        </div>
+        <div class="pb-hud-progress"><div id="pb-hud-progress-bar" class="pb-hud-progress-bar"></div></div>
+        <div class="pb-reticle" id="pb-reticle"></div>
+        <div class="pb-hud-bottom">
+          <div id="pb-iso-label" class="pb-hud-tag">ISO 800</div>
+          <div id="pb-shot-counter" class="pb-hud-tag">[ 0/1 ]</div>
+        </div>
+        <div id="pb-flash-overlay" class="pb-flash-overlay"></div>
+        <div id="pb-countdown" class="pb-countdown"></div>
+        <div id="pb-camerr" class="pb-camerr" style="display:none;">⚠ &nbsp;kamera tidak tersedia — periksa izin browser</div>
+      </div>
+      <div id="pb-camctrl" style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn btn-bl" id="pb-shot-btn" onclick="pbCapture()" style="padding:12px 34px;">Jepret 📸</button>
+        <button id="pb-upload-btn" onclick="document.getElementById('pb-upload-input').click()" style="background:transparent;border:1px solid rgba(242,180,65,.4);border-radius:50px;padding:10px 22px;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:1.5px;color:rgba(255,253,247,.75);cursor:pointer;">⬆ UPLOAD</button>
+        <input type="file" id="pb-upload-input" accept="image/*" style="display:none;" onchange="pbUploadPhoto(event)">
+        <button id="pb-skip-btn" onclick="pbSkip()" style="background:transparent;border:1px solid rgba(242,180,65,.3);border-radius:50px;padding:8px 20px;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(242,180,65,.55);cursor:pointer;transition:all .3s;">lewati bilik foto ↓</button>
+      </div>
+    </div>
+
+    <!-- Preview hasil, update live tiap kali satu foto diambil -->
+    <div class="pb-preview-col" id="pb-preview-col">
+      <div class="pb-preview-head">
+        <span>HASIL</span>
+        <span id="pb-preview-counter" class="pb-preview-counter">0/1</span>
+      </div>
+      <div class="pb-preview-frame">
+        <canvas id="pb-live-canvas"></canvas>
+        <div id="pb-preview-loading" class="pb-preview-loading">
+          <div class="pb-preview-spinner"></div>
+          <span>memuat template...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hasil akhir -->
+  <div id="pb-result" class="pb-result" style="display:none;">
+    <div class="pb-polaroid" id="pb-polaroid-wrap">
+      <canvas id="pb-canvas"></canvas>
+    </div>
+    <input id="pb-caption" class="pb-caption-input" maxlength="60" placeholder="tulis caption di bawah foto (opsional)...">
+    <div style="display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn btn-sg" onclick="pbRetake()" style="padding:12px 28px;font-size:.7rem;">Ambil Ulang</button>
+      <button class="btn" onclick="pbDownload()" style="padding:12px 28px;font-size:.7rem;">Unduh PNG ⬇</button>
+      <button class="btn btn-bl" onclick="pbContinue()" style="padding:12px 34px;font-size:.75rem;">Lihat Sertifikatmu →</button>
+    </div>
+  </div>
+</div>
+
+<!-- S13 SERTIFIKAT -->
+<div class="screen" id="s13">
+  <div class="cwrap">
+    <div id="pzone" class="ccard">
+      <div class="cseal"><div class="cseal-ribbon l"></div><div class="cseal-ribbon r"></div><div class="cseal-circle"><svg viewBox="0 0 40 40" width="26" height="26" fill="none"><path d="M24 9a11 11 0 1 0 6.5 19.8A9 9 0 0 1 24 9Z" fill="#5E3B21"/><path d="M29 8.5 L30.6 12.3 L34.5 13.9 L30.6 15.5 L29 19.3 L27.4 15.5 L23.5 13.9 L27.4 12.3Z" fill="#5E3B21"/></svg></div></div>
+      <div class="ccorner tl"></div><div class="ccorner tr"></div><div class="ccorner bl"></div><div class="ccorner br"></div>
+      <div class="chead">Taman Bulan · Certificate of the Second Decade</div>
+      <div class="ctitle">SERTIFIKAT PERAYAAN DEKADE KEDUA</div>
+      <div class="cdiv"></div>
+      <div class="cfor">diberikan dengan penuh kehormatan kepada:</div>
+      <div class="cname">Naffa Febry Cornelia</div>
+      <p class="cbody">Atas keberhasilan melewati dua dekade dengan keanggunan, ketangguhan, dan ketulusan hati tanpa batas. Resmi menyandang gelar kehormatan sebagai:</p>
+      <div class="cdyntitle" id="cdyntitle">[ The Wildflower Sovereign ]</div>
+      <div class="cess"><div class="cesbadge" id="cflval">Esensi Bunga: —</div><div class="cesbadge" id="canval">Esensi Hewan: —</div></div>
+      <p class="cwish" id="cwish">"Semoga taman hidupmu selalu mekar indah tanpa henti..."</p>
+      <div class="cdiv"></div>
+      <div class="csigs">
+        <div><div class="csigname" style="color:var(--cream);">Semesta</div><div class="csigline"></div><div class="csigrole">Saksi Linimasa Takdir</div></div>
+        <div style="text-align:right;"><div class="csigname" style="color:var(--rose-lt);">Rizqi Maulana</div><div class="csigline" style="margin-left:auto;"></div><div class="csigrole">Sahabat Kecilmu</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;z-index:20;margin-top:14px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn" onclick="savePNG()" style="border-color:var(--rose);color:var(--rose-lt);padding:11px 26px;font-size:.72rem;"><svg viewBox="0 0 20 20" width="15" height="15" fill="none" style="vertical-align:middle;margin-right:5px"><rect x="3" y="3" width="14" height="14" rx="2" stroke="#F1A094" stroke-width="1.5"/><path d="M7 3v5h6V3" stroke="#F1A094" stroke-width="1.2"/><path d="M5 13h10v4H5z" fill="#F1A094" opacity=".5"/></svg>Simpan PNG</button>
+    <button class="btn" onclick="window.print()" style="border-color:var(--gold);color:var(--gold-lt);padding:11px 26px;font-size:.72rem;"><svg viewBox="0 0 20 20" width="15" height="15" fill="none" style="vertical-align:middle;margin-right:5px"><rect x="4" y="7" width="12" height="8" rx="1.5" stroke="#F6CB7A" stroke-width="1.4"/><path d="M6 7V4h8v3" stroke="#F6CB7A" stroke-width="1.2"/><rect x="6" y="11" width="8" height="1.2" rx=".6" fill="#F6CB7A" opacity=".6"/><rect x="6" y="13" width="5" height="1.2" rx=".6" fill="#F6CB7A" opacity=".6"/></svg>Cetak PDF</button>
+    <button class="btn" onclick="downloadSuratPDF()" style="border-color:var(--sage);color:var(--sage-lt);padding:11px 26px;font-size:.72rem;">📄 Surat 2030 (PDF)</button>
+    <button class="btn" onclick="openReplyModal()" style="border-color:rgba(232,96,76,.5);color:var(--rose-lt);padding:11px 26px;font-size:.72rem;">💬 Chat</button>
+    <button class="btn" onclick="document.getElementById('voucher-modal').style.display='flex';" style="border-color:rgba(242,180,65,.6);color:var(--gold-lt);padding:11px 26px;font-size:.72rem;">🎁 Klaim Voucher</button>
+    <button class="btn" onclick="resetAllWithTrack()" style="border-color:rgba(255,253,247,.2);color:rgba(255,253,247,.5);padding:11px 26px;font-size:.72rem;"><svg viewBox="0 0 20 20" width="16" height="16" fill="none"><path d="M4 10 A6 6 0 1 1 10 16" stroke="#FFFDF7" stroke-width="2" stroke-linecap="round"/><path d="M4 13 L4 10 L7 10" stroke="#FFFDF7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Ulangi</button>
+  </div>
+  <p style="font-size:.58rem;opacity:.2;margin-top:14px;letter-spacing:2px;font-family:'Space Mono',monospace;">TAMAN BULAN · NAFFA BIRTHDAY EXPERIENCE · 2027</p>
+
+  <!-- Kotak Kejutan Tersembunyi — diposisikan di atas tombol fullscreen (bukan menumpuk) -->
+  <div id="secret-box-wrap" style="position:fixed;bottom:28px;left:22px;z-index:500;opacity:0;transition:opacity 1s ease;pointer-events:none;display:flex;flex-direction:column;align-items:center;">
+    <div id="secret-box-hover" onclick="openSecretBox()" style="cursor:pointer;">
+      <div id="secret-box" style="position:relative;width:54px;height:54px;background:linear-gradient(145deg,rgba(232,96,76,.28),rgba(242,180,65,.32));border:1.5px solid rgba(246,203,122,.6);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;" title="Ada yang tersembunyi...">
+        <span style="position:relative;z-index:1;">✉️</span>
+        <span style="position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle,#fff2c4,#F1A094);box-shadow:0 0 8px rgba(241,160,148,.9);animation:sbPing 2.2s ease-in-out infinite;"></span>
+      </div>
+    </div>
+    <div style="font-family:'Space Mono',monospace;font-size:.44rem;letter-spacing:1.8px;color:rgba(246,203,122,.7);text-align:center;margin-top:6px;animation:sbLabelPulse 2.6s ease-in-out infinite;">✦ buka surat ✦</div>
+  </div>
+  
+  <div id="secret-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(5,4,3,.88);z-index:9995;align-items:center;justify-content:center;backdrop-filter:blur(12px);" onclick="if(event.target===this)closeSecretModal()">
+    <div class="sm-card">
+      <div class="sm-petals" id="sm-petals"></div>
+      <button class="sm-close" onclick="closeSecretModal()" aria-label="Tutup">×</button>
+      <span class="sm-seal">🌸</span>
+      <div class="sm-label">✦ PESAN RAHASIA · HANYA UNTUKMU</div>
+      <h3 class="sm-title">Untuk Kamu yang Sudah Sampai Sejauh Ini</h3>
+      <p class="sm-body">
+        <span class="sm-p">Naffa,</span>
+        <span class="sm-p">Kalau kamu membaca pesan ini, berarti kamu sudah membuka dan menyelesaikan semua stage yang ada di taman ini, tidak ada satu pun yang kamu lewati. Teka-teki, surat, harapan, lilin yang mungkin agak rewel saat ditiup, sampai sertifikat yang sekarang ada di tanganmu.</span>
+        <span class="sm-p">Pesan ini sebenarnya bonus kecil dariku, semacam "terima kasih" yang sengaja aku sembunyikan paling akhir. Karena buatku, sampai di titik ini saja sudah berarti kamu cukup peduli untuk benar-benar menjalani semuanya, bukan sekadar lewat begitu saja.</span>
+        <span class="sm-p">Tidak semua pertemanan berjalan mulus, kita berdua juga sempat salah paham untuk beberapa waktu. Tapi justru karena itu, aku jadi lebih menghargai momen kita bisa berteman baik lagi seperti sekarang. Aku bersyukur banget untuk itu, dan senang bisa membuatkan sesuatu sekecil ini untukmu.</span>
+        <span class="sm-p">Taman ini dibuat sepenuh hati, dari hal-hal kecil yang aku tahu tentang kamu, dan dari harapan-harapan yang aku titipkan di setiap sudutnya. Semoga setiap bagian yang kamu lewati tadi terasa hangat, dan semoga kamu bisa merasakan seberapa besar kamu dihargai lewat cara yang sederhana ini.</span>
+        <span class="sm-p">Terima kasih sudah mau meluangkan waktu, sudah mau penasaran, dan sudah mau sabar mengikuti semuanya sampai ke titik ini, padahal kamu sama sekali tidak harus melakukannya.</span>
+        <span class="sm-p">Selamat ulang tahun ke-20, Naffa. Semoga tahun ini jadi awal dari banyak hal baik yang akhirnya kamu dapatkan. Dan kalau suatu hari kamu lupa pernah ada taman kecil ini, semoga kamu tetap ingat pernah ada sahabat kecilmu yang berusaha membuatmu merasa spesial, walau cuma lewat layar dan baris-baris kode sederhana.</span>
+        <span class="sm-p">Terima kasih sudah sampai di akhir cerita ini.</span>
+      </p>
+      <div class="sm-sig">Rizqi 🌙</div>
+    </div>
+  </div>
+
+  <!-- Chat Diam-diam — sekarang livechat 2 arah dengan Rizqi lewat halaman chat.html
+       terpisah miliknya, keduanya "dengerin" koleksi Firestore yang sama secara live. -->
+  <div id="reply-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(5,4,3,.88);z-index:9995;align-items:center;justify-content:center;backdrop-filter:blur(12px);" onclick="if(event.target===this)closeReplyModal()">
+    <div class="sm-card" style="max-width:440px;width:92vw;padding:0;overflow:hidden;display:flex;flex-direction:column;height:min(78vh,620px);">
+      <div style="padding:20px 26px 14px;border-bottom:1px solid rgba(242,180,65,.15);position:relative;flex-shrink:0;">
+        <button class="sm-close" onclick="closeReplyModal()" aria-label="Tutup" style="top:14px;right:14px;">×</button>
+        <div style="font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:3px;color:var(--gold);margin-bottom:6px;">✦ CHAT DIAM-DIAM</div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;color:var(--cream);">Ngobrol sama Rizqi</h3>
+      </div>
+      <div id="chat-body-nm" style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:8px;"><div style="margin:auto;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.85rem;color:rgba(255,253,247,.4);padding:20px;">Tulis sesuatu — Rizqi bisa balas kapan pun dia buka chatnya ✦</div></div>
+      <div style="display:flex;gap:8px;padding:12px;border-top:1px solid rgba(242,180,65,.15);flex-shrink:0;">
+        <textarea id="reply-text" maxlength="500" rows="1" placeholder="Tulis di sini..." style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(242,180,65,.25);border-radius:22px;padding:11px 16px;color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.92rem;resize:none;outline:none;max-height:90px;"></textarea>
+        <button id="reply-submit-btn" onclick="sendSecretReply()" style="background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;border-radius:50%;width:40px;height:40px;flex-shrink:0;cursor:pointer;color:#0A1830;font-size:1rem;">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

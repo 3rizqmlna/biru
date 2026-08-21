@@ -1,0 +1,8 @@
+Upload 1 file gambar preview link (yang muncul saat link di-share
+di WhatsApp/Instagram/dll) ke folder ini dengan nama persis:
+
+og-preview.png
+
+Ukuran yang disarankan: 1200x630px (rasio 1.91:1).
+
+Setelah file ini ada di sini, hapus file BACA-INI.txt ini (opsional).

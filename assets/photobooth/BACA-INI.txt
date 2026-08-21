@@ -1,0 +1,16 @@
+Upload 11 gambar template photobooth berikut ke folder ini,
+dengan nama file persis angka + .png seperti daftar di bawah:
+
+1.png   → 🐱 Creative Lab
+2.png   → 🍦 HBD Naffa Ungu
+3.png   → 💙 Thanks for Today (Strip)
+4.png   → 🩷 Pink Kawaii
+5.png   → 📜 Wax Seal Stripe
+6.png   → 🎞️ Caught on Film
+7.png   → 📎 Scrapbook Notebook
+8.png   → 🖤 Polaroid Birthday
+9.png   → 🤍 Simple Happy Birthday
+10.png  → 📱 Instagram Naffa
+11.png  → 😸 Cute Meme Collage
+
+Setelah file-file ini ada di sini, hapus file BACA-INI.txt ini (opsional).

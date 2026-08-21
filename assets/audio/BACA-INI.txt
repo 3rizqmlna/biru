@@ -1,0 +1,9 @@
+Upload 4 file MP3 berikut ke folder ini, dengan NAMA FILE PERSIS seperti ini
+(kalau nama berbeda, kode tidak akan menemukan filenya):
+
+1. The 1975 - About You Official.mp3
+2. JVKE - her.mp3
+3. The Oh Hellos - Soldier, Poet, King.mp3
+4. TANGLED - Kingdom Dance.mp3
+
+Setelah file-file ini ada di sini, hapus file BACA-INI.txt ini (opsional).
