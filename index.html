@@ -36,8 +36,8 @@
     <div class="lk-shimmer"></div>
     <div class="lk-corner tl"></div><div class="lk-corner tr"></div><div class="lk-corner bl"></div><div class="lk-corner br"></div>
     <div class="lk-icon">✦</div>
-    <div class="lk-em" id="lk-emletter" tabindex="0" role="button" aria-label="Buka dengan kata sandi">N</div>
-    <div class="lk-sub">Taman Bulan · Liaa</div>
+    <div class="lk-em" id="lk-emletter" tabindex="0" role="button" aria-label="Buka dengan kata sandi">A</div>
+    <div class="lk-sub">Taman Bulan · Liaa Na</div>
     <div class="lk-divider"></div>
     <p class="lk-msg">Taman ini masih tertutup rapat, menunggu hari yang sudah ditentukan untuk terbuka.</p>
     <div class="lk-progress" aria-hidden="true">
@@ -762,22 +762,21 @@ void main() {
     uv.x *= u_ratio;
     vec2 cursor = vUv - u_cursor.xy;
     cursor.x *= u_ratio;
-    // 10 warna bunga berbeda dari palet situs — tiap bunga yang tumbuh mendapat
-    // salah satu (atau campuran halus antar dua) dari kesepuluh warna ini,
-    // menggantikan magenta/ungu/kuning-neon bawaan shader aslinya.
-    vec3 c_rose=vec3(.910,.376,.298);     // Rose — mawar senja
-    vec3 c_rose_lt=vec3(.945,.627,.580);  // Rose muda — merah jambu lembut
-    vec3 c_gold=vec3(.949,.706,.255);     // Gold — kuning keemasan
-    vec3 c_gold_lt=vec3(.965,.796,.478);  // Gold muda — madu hangat
-    vec3 c_sage=vec3(.498,.682,.416);     // Sage — hijau daun
-    vec3 c_sage_lt=vec3(.698,.808,.651);  // Sage muda — hijau mint
-    vec3 c_moon=vec3(.373,.682,.859);     // Moon — biru langit
-    vec3 c_moon_lt=vec3(.561,.796,.918);  // Moon muda — biru pastel
-    vec3 c_lav=vec3(.780,.624,.878);      // Lavender — ungu senja
-    vec3 c_mag=vec3(.929,.808,.831);      // Magnolia — putih merah jambu
-    vec3 stem_color = mix(c_sage, c_gold, .3 * u_stop_randomizer[0]);
-    vec3 flower_color = decapalette_mix(c_rose, c_rose_lt, c_gold, c_gold_lt, c_sage, c_sage_lt, c_moon, c_moon_lt, c_lav, c_mag, u_stop_randomizer[1]);
-    vec3 flower_color_back = decapalette_mix(c_mag, c_lav, c_moon_lt, c_moon, c_sage_lt, c_sage, c_gold_lt, c_gold, c_rose_lt, c_rose, u_stop_randomizer[0]);
+    // 10 warna bunga berbeda, dipilih vivid & saturated (bukan varian pucat/pastel)
+    // supaya kontras dan enak dilihat, tidak jadi keputihan saat bertumpuk di shader.
+    vec3 c_coral=vec3(.94,.30,.24);   // Merah koral cerah
+    vec3 c_magenta=vec3(.90,.20,.52); // Magenta/fuchsia
+    vec3 c_gold=vec3(.98,.66,.10);    // Kuning keemasan pekat
+    vec3 c_orange=vec3(.96,.46,.08);  // Oranye cerah
+    vec3 c_grass=vec3(.32,.66,.28);   // Hijau daun pekat
+    vec3 c_teal=vec3(.10,.62,.52);    // Hijau toska/emerald
+    vec3 c_sky=vec3(.16,.56,.86);     // Biru langit pekat
+    vec3 c_indigo=vec3(.30,.34,.82);  // Biru indigo
+    vec3 c_violet=vec3(.58,.28,.85);  // Ungu violet
+    vec3 c_rose=vec3(.85,.24,.34);    // Merah mawar pekat
+    vec3 stem_color = mix(c_grass, c_gold, .3 * u_stop_randomizer[0]);
+    vec3 flower_color = decapalette_mix(c_coral, c_magenta, c_gold, c_orange, c_grass, c_teal, c_sky, c_indigo, c_violet, c_rose, u_stop_randomizer[1]);
+    vec3 flower_color_back = decapalette_mix(c_rose, c_violet, c_indigo, c_sky, c_teal, c_grass, c_orange, c_gold, c_magenta, c_coral, u_stop_randomizer[0]);
     float angle = .5 * (u_stop_randomizer[0] - .5);
     float stem_shape = get_stem_shape(cursor, uv, .003, angle);
     stem_shape += get_stem_shape(cursor + vec2(0., .2 + .5 * u_stop_randomizer[0]), uv, .003, angle);
