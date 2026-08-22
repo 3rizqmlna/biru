@@ -1,4 +1,3 @@
-
 // ===== PLAYLIST — satu sumber kebenaran untuk semua lagu & metadatanya =====
 // Urutan array = urutan playlist. Tambah/hapus lagu cukup edit array ini saja,
 // tidak perlu sentuh elemen <audio> atau logika pemutaran di bawah.
@@ -1836,7 +1835,46 @@ function verify2(){const a=document.getElementById('cb').value.trim();if(a==='20
 // COUNTDOWN
 function startCD(){setBG('moon');if(cdInt)clearInterval(cdInt);cdInt=setInterval(()=>{const n=new Date(),yr=n.getFullYear()-BIRTH.getFullYear();let ann=new Date(BIRTH);ann.setFullYear(n.getFullYear());if(n<ann)ann.setFullYear(n.getFullYear()-1);const d=Math.floor((n-ann)/864e5);document.getElementById('cdy').textContent=String(yr).padStart(2,'0');document.getElementById('cdd').textContent=String(d).padStart(2,'0');document.getElementById('cdh').textContent=String(n.getHours()).padStart(2,'0');document.getElementById('cdm').textContent=String(n.getMinutes()).padStart(2,'0');document.getElementById('cds').textContent=String(n.getSeconds()).padStart(2,'0');document.getElementById('livems').textContent='TOTAL: '+(n-BIRTH).toLocaleString()+' MILIDETIK MEKAR';},1000);}
 
-// TAROT
+// TAROT — animasi "kocok & bagikan kartu" saat masuk stage, menggantikan grid statis
+// yang langsung tampil diam. Cara kerja: tiap kartu digeser secara visual (transform,
+// tanpa mengubah alur layout flex) ke titik tengah grid dengan rotasi acak & opacity 0,
+// lalu dianimasikan mundur ke posisi aslinya satu per satu (efek kartu "dibagikan").
+let _tarotDealing=false;
+function tarotDealAnimation(){
+  const grid=document.querySelector('#str .tgrid2');
+  if(!grid||_tarotDealing)return;
+  const cards=Array.from(grid.querySelectorAll('.tcard'));
+  if(!cards.length)return;
+  _tarotDealing=true;
+  const gridRect=grid.getBoundingClientRect();
+  const cx=gridRect.width/2, cy=gridRect.height/2;
+  grid.style.pointerEvents='none';
+  cards.forEach(function(c){
+    const r=c.getBoundingClientRect();
+    const left=r.left-gridRect.left, top=r.top-gridRect.top;
+    const dx=(cx-r.width/2)-left, dy=(cy-r.height/2)-top;
+    const rot=(Math.random()*56-28).toFixed(1);
+    c.style.transition='none';
+    c.style.transform='translate('+dx+'px,'+dy+'px) rotate('+rot+'deg) scale(.82)';
+    c.style.opacity='0';
+  });
+  void grid.offsetWidth; // paksa reflow supaya transisi berikutnya benar-benar terpicu
+  try{sfx('tr');}catch(e){}
+  cards.forEach(function(c,i){
+    setTimeout(function(){
+      c.style.transition='transform .68s cubic-bezier(.16,.84,.28,1.05), opacity .45s ease';
+      c.style.transform='translate(0,0) rotate(0deg) scale(1)';
+      c.style.opacity='1';
+      if(navigator.vibrate)navigator.vibrate(12);
+    },240+i*95);
+  });
+  const total=240+cards.length*95+750;
+  setTimeout(function(){
+    cards.forEach(function(c){ c.style.transition=''; c.style.transform=''; c.style.opacity=''; });
+    grid.style.pointerEvents='';
+    _tarotDealing=false;
+  },total);
+}
 function flipTarot(el){if(el.classList.contains('flipped'))return;if(document.querySelector('.tcard.flipped'))return;sfx('ok');el.classList.add('flipped');const r=el.getBoundingClientRect();bloom(r.left+r.width/2,r.top+r.height/2,'#F2B441');document.getElementById('ntarot').style.display='inline-flex';const shb=document.getElementById('strHintBtn');if(shb)shb.style.display='none';const shx=document.getElementById('strHintBox');if(shx)shx.style.display='none';const tfn=el.querySelector('.tfname'),th4=el.querySelector('h4');if(tfn&&th4)selTarot=tfn.textContent.trim()+' — '+th4.textContent.trim();document.querySelectorAll('.tcard').forEach(c=>{if(c!==el){c.style.opacity='.35';c.style.filter='grayscale(.6)';c.style.pointerEvents='none';c.style.transition='opacity .5s ease, filter .5s ease';}});}
 function strShowHint(){const msgs=['Sentuh salah satu dari 6 kartu di atas untuk membaliknya!','Pilih kartu manapun — ikuti intuisimu. Tidak ada jawaban yang salah.','Sentuh kartu yang paling menarik perhatianmu saat ini.'];const hb=document.getElementById('strHintBox');if(hb){hb.textContent=msgs[Math.floor(Math.random()*msgs.length)];hb.style.display='block';}setTimeout(function(){if(hb)hb.style.display='none';},3000);}
 
@@ -1844,10 +1882,73 @@ function strShowHint(){const msgs=['Sentuh salah satu dari 6 kartu di atas untuk
 function pickPhilo(t,v,id){sfx('tr');if(t==='f'){selF=v;['fl1','fl2','fl3','fl4'].forEach(i=>document.getElementById(i).classList.remove('selected'));}else{selA=v;['an1','an2','an3','an4'].forEach(i=>document.getElementById(i).classList.remove('selected'));}document.getElementById(id).classList.add('selected');if(selF&&selA)document.getElementById('nphilo').style.display='inline-flex';}
 function confirmPhilo(){sfx('ok');document.getElementById('cflval').textContent='Esensi Bunga: '+selF;document.getElementById('canval').textContent='Esensi Hewan: '+selA;go('sph','s3');}
 
-// CHOICE / DESTINY
-function wrongC(el){sfx('err');el.style.borderColor='rgba(232,96,76,.5)';showAlert('Taman ini mendeteksi kekuatanmu jauh melampaui ini. Pilihlah nomor 3! 🌸');}
-function rightC(el){sfx('ok');el.style.borderColor='var(--sage)';el.style.background='rgba(127,174,106,.08)';setTimeout(()=>go('s3','s3b'),500);}
-function pickDest(t,id){sfx('ok');selD=t;document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected'));document.getElementById(id).classList.add('selected');document.getElementById('npath').style.display='inline-flex';document.getElementById('cdyntitle').textContent='[ '+t+' ]';document.getElementById('dynbadge').textContent=t;}
+// CHOICE / DESTINY — "3 Gerbang Jiwa": pintu salah bergetar & meredup, pintu benar
+// bercahaya sebelum lanjut, menggantikan interaksi klik→alert yang datar.
+function wrongC(el){
+  sfx('err');
+  el.classList.add('wrong-flash');
+  el.style.animation='none';
+  void el.offsetWidth; // reflow supaya animasi bisa diputar ulang tiap klik
+  el.style.animation='doorShake .5s ease';
+  if(navigator.vibrate)navigator.vibrate(35);
+  setTimeout(function(){ el.style.animation=''; },500);
+  setTimeout(function(){ el.classList.remove('wrong-flash'); },900);
+  showAlert('Taman ini mendeteksi kekuatanmu jauh melampaui ini. Pilihlah nomor 3! 🌸');
+}
+function rightC(el){
+  sfx('ok');
+  el.classList.add('right-open');
+  el.disabled=true;
+  document.querySelectorAll('#s3 .bchoice').forEach(function(b){ if(b!==el){ b.disabled=true; b.style.opacity='.35'; } });
+  const r=el.getBoundingClientRect();
+  bloom(r.left+r.width/2, r.top+r.height/2, '#7FAE6A');
+  gateOpenFX();
+  if(navigator.vibrate)navigator.vibrate([40,30,90]);
+  setTimeout(()=>go('s3','s3b'),1400);
+}
+function gateOpenFX(){
+  const ov=document.createElement('div');
+  ov.className='gate-open-fx';
+  ov.innerHTML='<div class="gate-open-txt">✦ GERBANG TERBUKA ✦</div>';
+  document.body.appendChild(ov);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ ov.classList.add('show'); }); });
+  setTimeout(function(){ ov.classList.remove('show'); },1050);
+  setTimeout(function(){ ov.remove(); },1650);
+}
+
+// RANGKUMAN PERJALANAN — merangkai pilihan tarot + esensi bunga/hewan jadi satu
+// kalimat begitu gelar takdir dipilih, supaya pilihan-pilihan sebelumnya (str/sph)
+// terasa berbuah, bukan sekadar checklist yang lewat begitu saja.
+function _synthExtractName(str){ if(!str) return ''; const i=str.indexOf(' ('); return i>-1 ? str.substring(0,i).trim() : str.trim(); }
+function _synthExtractTrait(str){ if(!str) return ''; const m=str.match(/\(([^)]+)\)/); return m ? m[1].trim() : ''; }
+function buildJourneySynthesis(){
+  const flowerName=_synthExtractName(selF)||'bunga jiwa';
+  const flowerTrait=_synthExtractTrait(selF);
+  const animalName=_synthExtractName(selA)||'hewan jiwa';
+  const animalTrait=_synthExtractTrait(selA);
+  let tarotName='rembulan';
+  if(selTarot){ const parts=selTarot.split('—'); tarotName=(parts[1]||parts[0]||tarotName).trim(); }
+  const destinyName=selD||'The Wildflower Sovereign';
+  return 'Di bawah naungan <em>'+tarotName+'</em>, jiwamu bersemayam dalam '
+    +(flowerTrait?'kelembutan '+flowerTrait.toLowerCase()+' seperti ':'kelembutan ')+'<em>'+flowerName+'</em>'
+    +' dan '+(animalTrait?animalTrait.toLowerCase()+' seorang ':'semangat ')+'<em>'+animalName+'</em>'
+    +'. Maka resmi kau menyandang gelar <strong>'+destinyName+'</strong> — perjalanan menuju dekade keduamu dimulai dari sini ✦';
+}
+function pickDest(t,id){
+  sfx('ok');selD=t;
+  document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected'));
+  document.getElementById(id).classList.add('selected');
+  document.getElementById('npath').style.display='inline-flex';
+  document.getElementById('cdyntitle').textContent='[ '+t+' ]';
+  document.getElementById('dynbadge').textContent=t;
+  const syn=document.getElementById('destinySynthesis');
+  if(syn){
+    syn.classList.remove('show');
+    syn.innerHTML=buildJourneySynthesis();
+    void syn.offsetWidth;
+    setTimeout(function(){ syn.classList.add('show'); },260);
+  }
+}
 
 // CINEMATIC
 const PTXTS=["Dua puluh tahun bukanlah sekadar angka —\nitu adalah ribuan pagi yang kamu pilih untuk bangkit.","Setiap versi dirimu yang pernah ada\ntelah membawa kamu ke titik yang tepat ini.","Dan kamu, Naffa,\nadalah karya paling nyata yang pernah semesta ciptakan."];
@@ -2518,11 +2619,16 @@ function resetAll(){
   try{const ab=document.getElementById('asmbar');if(ab)ab.style.width='0%';}catch(e){}
   try{const ap=document.getElementById('asmpct');if(ap)ap.textContent='🌸 0/20 BUNGA';}catch(e){}
   try{const wh=document.getElementById('wgl-hint');if(wh)wh.style.opacity='1';}catch(e){}
-  try{document.querySelectorAll('.tcard').forEach(c=>{c.classList.remove('flipped');c.style.opacity='';c.style.filter='';c.style.pointerEvents='';});}catch(e){}
+  try{document.querySelectorAll('.tcard').forEach(c=>{c.classList.remove('flipped');c.style.opacity='';c.style.filter='';c.style.pointerEvents='';c.style.transform='';c.style.transition='';});}catch(e){}
+  try{_tarotDealing=false;}catch(e){}
   try{document.querySelectorAll('.phopt').forEach(c=>c.classList.remove('selected'));}catch(e){}
   try{document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected'));}catch(e){}
   try{document.getElementById('cflval').textContent='Esensi Bunga: —';}catch(e){}
   try{document.getElementById('canval').textContent='Esensi Hewan: —';}catch(e){}
+  try{selTarot='';}catch(e){}
+  try{const ds=document.getElementById('destinySynthesis');if(ds){ds.innerHTML='';ds.classList.remove('show');}}catch(e){}
+  try{document.querySelectorAll('#s3 .bchoice').forEach(function(b){b.classList.remove('wrong-flash','right-open');b.style.animation='';b.style.opacity='';b.disabled=false;});}catch(e){}
+  try{const gf=document.querySelector('.gate-open-fx');if(gf)gf.remove();}catch(e){}
   try{const eb=document.getElementById('entbtn');if(eb){eb.style.display='none';eb.disabled=false;eb.innerHTML='<span aria-hidden="true">✦</span> Masuki Taman';}}catch(e){}
   try{const micgate=document.getElementById('mic-gate');if(micgate){micgate.style.display='flex';const mb=micgate.querySelector('button');if(mb){mb.textContent='✦ izinkan mikrofon untuk tiup lilin';mb.disabled=false;}}}catch(e){}
   // Reset stage history & UI tambahan
@@ -2617,6 +2723,7 @@ window.go = function(f, t) {
     if(_stageHistory.length>10) _stageHistory.shift();
   }
   _origGo(f, t);
+  if(t==='str') setTimeout(function(){ if(typeof tarotDealAnimation==='function') tarotDealAnimation(); }, 700);
   setTimeout(function(){ if(typeof _updateBackBtn==='function') _updateBackBtn(); }, 700);
 };
 
@@ -3034,6 +3141,7 @@ function devSkip(id){
   if(id==='s9b')setTimeout(initWebGLFlowers,900);
   if(id==='s13')setTimeout(confetti,700);
   if(id==='scd')startCD();
+  if(id==='str'){setTimeout(function(){ if(typeof tarotDealAnimation==='function') tarotDealAnimation(); },250);}
   if(id==='s10'){setTimeout(function(){initCakeCanvas();var gate=document.getElementById('mic-gate');if(gate)gate.style.display='flex';},900);}
   if(id==='sphoto'){setTimeout(initPhotobooth,300);}
 }
@@ -3927,6 +4035,3 @@ document.addEventListener('fullscreenchange',function(){
     pwinput.addEventListener('input', function(){ pwerr.classList.remove('lk-show'); });
   }
 })();
-
-
-
