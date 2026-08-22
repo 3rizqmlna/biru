@@ -1,4 +1,3 @@
-
 :root{
   --cream:#FFFDF7;--parch:#FBF3DE;--sage:#7FAE6A;--sage-lt:#B2CEA6;
   --rose:#E8604C;--rose-lt:#F1A094;--gold:#F2B441;--gold-lt:#F6CB7A;
@@ -223,6 +222,24 @@ h2{font-family:'Cormorant Garamond',serif;font-weight:500;}
 .bchoice{display:block;width:100%;max-width:480px;text-align:left;background:rgba(12,22,38,.7);border:1px solid rgba(242,180,65,.15);border-radius:14px;padding:14px 20px;color:rgba(255,253,247,.7);font-family:'Josefin Sans',sans-serif;font-size:.8rem;line-height:1.5;cursor:pointer;margin:5px 0;transition:all .3s ease;}
 .bchoice:hover{border-color:rgba(242,180,65,.35);background:rgba(242,180,65,.06);color:var(--cream);}
 
+/* GERBANG JIWA — efek pintu salah bergetar/meredup & pintu benar bercahaya,
+   menggantikan interaksi klik-lihat-alert yang datar sebelumnya */
+.bchoice.wrong-flash{background:rgba(232,96,76,.1)!important;border-color:rgba(232,96,76,.5)!important;color:rgba(255,220,215,.85)!important;}
+@keyframes doorShake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-9px) rotate(-.6deg);}
+  40%{transform:translateX(8px) rotate(.6deg);}
+  60%{transform:translateX(-6px);}
+  80%{transform:translateX(4px);}
+}
+.bchoice.right-open{border-color:var(--sage)!important;background:rgba(127,174,106,.1)!important;box-shadow:0 0 26px rgba(127,174,106,.25);}
+/* Kilau cahaya penuh layar saat gerbang yang benar terbuka */
+.gate-open-fx{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(255,250,220,0) 0%,rgba(255,250,220,0) 100%);opacity:0;transition:opacity .6s ease;}
+.gate-open-fx.show{opacity:1;background:radial-gradient(circle at 50% 50%,rgba(255,250,220,.55) 0%,rgba(246,203,122,.16) 42%,rgba(0,0,0,0) 72%);}
+.gate-open-txt{font-family:'Cormorant Garamond',serif;font-size:clamp(1.2rem,4vw,1.9rem);letter-spacing:7px;color:#fffdf7;text-shadow:0 0 30px rgba(246,203,122,.9);opacity:0;transform:scale(.85);transition:opacity .6s ease .15s,transform .6s ease .15s;text-align:center;padding:0 20px;}
+.gate-open-fx.show .gate-open-txt{opacity:1;transform:scale(1);}
+
 /* DESTINY */
 .dgrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:720px;margin:14px 0;}
 .dcard{background:rgba(12,22,38,.82);border:1px solid rgba(242,180,65,.2);border-radius:20px;padding:22px 18px;width:200px;cursor:pointer;transition:all .35s ease;text-align:center;}
@@ -231,6 +248,15 @@ h2{font-family:'Cormorant Garamond',serif;font-weight:500;}
 .dico{font-size:2.2rem;margin-bottom:10px;}
 .dcard h4{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--cream);margin-bottom:5px;}
 .dcard p{font-size:.65rem;color:rgba(255,253,247,.55);line-height:1.5;}
+
+/* RANGKUMAN PERJALANAN — merangkai pilihan tarot, esensi bunga/hewan, dan gelar
+   takdir jadi satu kalimat puitis begitu gelar dipilih, supaya pilihan-pilihan
+   sebelumnya terasa berbuah, bukan sekadar checklist yang lewat begitu saja. */
+.destiny-synthesis{max-width:520px;width:100%;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.98rem;line-height:1.85;color:rgba(255,253,247,.85);background:rgba(12,22,38,.55);border:1px solid rgba(242,180,65,.22);border-radius:16px;padding:16px 24px;margin:8px auto 2px;opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;}
+.destiny-synthesis:empty{display:none;}
+.destiny-synthesis.show{opacity:1;transform:translateY(0);}
+.destiny-synthesis em{color:var(--gold-lt);font-style:italic;}
+.destiny-synthesis strong{color:var(--rose-lt);}
 
 /* LETTER */
 .lscroll{background:rgba(12,22,38,.9);border:1px solid rgba(242,180,65,.2);border-radius:20px;padding:32px 36px;max-width:600px;width:100%;max-height:65vh;overflow-y:auto;text-align:left;position:relative;}
@@ -847,4 +873,3 @@ html.nm-revisit #welcomeback{opacity:1!important;pointer-events:auto!important;t
   .sm-body .sm-p:last-child{margin-bottom:0;}
   .sm-sig{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(232,96,76,.6);}
   .sm-petals{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:24px;overflow:hidden;}
-  
