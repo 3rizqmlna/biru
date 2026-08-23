@@ -802,14 +802,14 @@ void main() {
     alpha *= u_clean;
     alpha = clamp(alpha, 0., 1.);
 
-    // FIX pinggiran hitam: sebelumnya warna sudah diredupkan oleh coverage tipis di
-    // tepi kelopak, lalu alpha blending browser meredupkannya SEKALI LAGI — dua kali
-    // peredupan itulah yang membuat tepian bunga terlihat gelap/kehitaman. Dengan
-    // membagi warna dengan alpha di sini (un-premultiply), warna tetap penuh & cerah
-    // sementara transparansinya tetap benar — tepian jadi memudar lembut, bukan menghitam.
-    vec3 outColor = (alpha > 0.001) ? (color / alpha) : color;
-
-    gl_FragColor = vec4(outColor, alpha);
+    // PENTING: jangan bagi "color" dengan alpha di sini. Tekstur hasil render ini juga
+    // dibaca ulang sebagai u_texture di frame berikutnya (buffer akumulasi jejak bunga),
+    // jadi warnanya harus tetap dalam skala "premultiplied" seperti semula supaya feedback
+    // loop-nya stabil — kalau dibagi alpha, piksel bertepi tipis (alpha kecil) meledak jadi
+    // sangat terang, lalu nilai itu ikut terekam & menumpuk tiap frame sampai semua putih.
+    // Perbaikan pinggiran hitam dilakukan di tahap render-ke-layar (lihat initWebGLFlowers
+    // di main.js: basicMaterial dipasang CustomBlending yang cocok untuk warna premultiplied).
+    gl_FragColor = vec4(color, alpha);
 }
 </script>
 <script type="x-shader/x-vertex" id="wgl-vertex-shader">
