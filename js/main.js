@@ -1,4 +1,3 @@
-
 // ===== PLAYLIST — satu sumber kebenaran untuk semua lagu & metadatanya =====
 // Urutan array = urutan playlist. Tambah/hapus lagu cukup edit array ini saja,
 // tidak perlu sentuh elemen <audio> atau logika pemutaran di bawah.
@@ -1836,18 +1835,362 @@ function verify2(){const a=document.getElementById('cb').value.trim();if(a==='20
 // COUNTDOWN
 function startCD(){setBG('moon');if(cdInt)clearInterval(cdInt);cdInt=setInterval(()=>{const n=new Date(),yr=n.getFullYear()-BIRTH.getFullYear();let ann=new Date(BIRTH);ann.setFullYear(n.getFullYear());if(n<ann)ann.setFullYear(n.getFullYear()-1);const d=Math.floor((n-ann)/864e5);document.getElementById('cdy').textContent=String(yr).padStart(2,'0');document.getElementById('cdd').textContent=String(d).padStart(2,'0');document.getElementById('cdh').textContent=String(n.getHours()).padStart(2,'0');document.getElementById('cdm').textContent=String(n.getMinutes()).padStart(2,'0');document.getElementById('cds').textContent=String(n.getSeconds()).padStart(2,'0');document.getElementById('livems').textContent='TOTAL: '+(n-BIRTH).toLocaleString()+' MILIDETIK MEKAR';},1000);}
 
-// TAROT
-function flipTarot(el){if(el.classList.contains('flipped'))return;if(document.querySelector('.tcard.flipped'))return;sfx('ok');el.classList.add('flipped');const r=el.getBoundingClientRect();bloom(r.left+r.width/2,r.top+r.height/2,'#F2B441');document.getElementById('ntarot').style.display='inline-flex';const shb=document.getElementById('strHintBtn');if(shb)shb.style.display='none';const shx=document.getElementById('strHintBox');if(shx)shx.style.display='none';const tfn=el.querySelector('.tfname'),th4=el.querySelector('h4');if(tfn&&th4)selTarot=tfn.textContent.trim()+' — '+th4.textContent.trim();document.querySelectorAll('.tcard').forEach(c=>{if(c!==el){c.style.opacity='.35';c.style.filter='grayscale(.6)';c.style.pointerEvents='none';c.style.transition='opacity .5s ease, filter .5s ease';}});}
-function strShowHint(){const msgs=['Sentuh salah satu dari 6 kartu di atas untuk membaliknya!','Pilih kartu manapun — ikuti intuisimu. Tidak ada jawaban yang salah.','Sentuh kartu yang paling menarik perhatianmu saat ini.'];const hb=document.getElementById('strHintBox');if(hb){hb.textContent=msgs[Math.floor(Math.random()*msgs.length)];hb.style.display='block';}setTimeout(function(){if(hb)hb.style.display='none';},3000);}
+// ===== STAGE 5 — KOCOK & TARIK KARTU (redesign dari grid tarot statis) =====
+const TAROT_DATA=[
+  {name:'THE SUN', title:'Sang Mentari', desc:'Cahayamu akan menerangi setiap ruang yang kamu masuki. Kelimpahan dan kejelasan menanti.'},
+  {name:'THE STAR', title:'Bintang Petunjuk', desc:'Impian yang kamu peluk erat di malam sepi akan mulai mewujud. Kamu adalah cahaya penuntun dirimu sendiri.'},
+  {name:'THE EMPRESS', title:'Sang Ratu Bunga', desc:'Kedewasaan membawa keanggunan raga dan kematangan jiwa. Kekuasaan atas kebahagiaanmu kini milikmu.'},
+  {name:'THE MOON', title:'Rembulan Abadi', desc:'Siklus baru membawa keberuntungan. Segala lelah bertransformasi menjadi kekuatan tak terduga.'},
+  {name:'THE WORLD', title:'Dunia Hijau', desc:'Kebijaksanaan batinmu meningkat. Kamu akan dikelilingi perlindungan dan harmoni yang kokoh.'},
+  {name:'THE LOVERS', title:'Sang Kupu-Kupu', desc:'Kasih sayang tulus dan penerimaan utuh terhadap dirimu akan datang memeluk linimasamu.'}
+];
+let _tarotShuffled=false,_tarotRevealed=false,_tarotDragging=null;
+function initTarotStage(){
+  _tarotShuffled=false;_tarotRevealed=false;_tarotDragging=null;
+  const deck=document.getElementById('tarotDeck'),reveal=document.getElementById('tarotReveal'),nbtn=document.getElementById('ntarot'),sub=document.getElementById('tarotSub'),stage=document.getElementById('tarotStage');
+  if(reveal)reveal.style.display='none';
+  if(nbtn)nbtn.style.display='none';
+  if(sub)sub.textContent='Ketuk tumpukan kartu untuk mengocoknya, lalu tarik kartu paling atas keluar.';
+  if(stage)stage.classList.remove('shuffling');
+  if(!deck)return;
+  deck.innerHTML='';
+  for(let i=0;i<6;i++){
+    const c=document.createElement('div');
+    c.className='tarot-card-back';c.dataset.i=String(i);
+    c.style.zIndex=String(i);
+    c.style.transform='translate('+((Math.random()-.5)*6)+'px,'+((Math.random()-.5)*6)+'px) rotate('+((Math.random()-.5)*6)+'deg)';
+    c.innerHTML='<div class="tcb-deco"><svg viewBox="0 0 40 40" width="30" height="30" fill="none"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/></svg></div>';
+    deck.appendChild(c);
+  }
+  deck.onclick=function(){if(!_tarotShuffled)tarotShuffle();};
+}
+function tarotShuffle(){
+  if(_tarotShuffled)return;
+  _tarotShuffled=true;
+  try{sfx('tr');}catch(e){}
+  const stage=document.getElementById('tarotStage'),deck=document.getElementById('tarotDeck');
+  if(stage)stage.classList.add('shuffling');
+  const cards=Array.from(deck.querySelectorAll('.tarot-card-back'));
+  let round=0;
+  const iv=setInterval(function(){
+    round++;
+    cards.forEach(function(c){
+      c.style.transition='transform .22s ease';
+      c.style.transform='translate('+((Math.random()-.5)*22)+'px,'+((Math.random()-.5)*14)+'px) rotate('+((Math.random()-.5)*18)+'deg)';
+    });
+    try{sfx('tr');}catch(e){}
+    if(round>=4){
+      clearInterval(iv);
+      if(stage)stage.classList.remove('shuffling');
+      cards.forEach(function(c,idx){
+        c.style.transition='transform .4s cubic-bezier(.16,1,.3,1)';
+        c.style.transform='translate('+((Math.random()-.5)*6)+'px,'+((Math.random()-.5)*6)+'px) rotate('+((Math.random()-.5)*6)+'deg)';
+        c.style.zIndex=String(idx);
+      });
+      const top=deck.querySelector('.tarot-card-back[data-i="5"]');
+      if(top){
+        top.classList.add('shuffled');
+        top.style.zIndex='10';
+        top.addEventListener('pointerdown',tarotDragStart);
+      }
+      const sub=document.getElementById('tarotSub');
+      if(sub)sub.textContent='Tarik kartu yang bersinar ke luar deck untuk mengungkap ramalanmu ✦';
+      if(navigator.vibrate)navigator.vibrate(20);
+    }
+  },220);
+}
+function tarotDragStart(e){
+  if(_tarotRevealed||!_tarotShuffled)return;
+  const card=e.currentTarget;
+  e.preventDefault();
+  try{card.setPointerCapture(e.pointerId);}catch(err){}
+  card.classList.add('dragging');
+  const startX=e.clientX,startY=e.clientY;
+  _tarotDragging={card:card,startX:startX,startY:startY,dx:0,dy:0};
+  card.addEventListener('pointermove',tarotDragMove);
+  card.addEventListener('pointerup',tarotDragEnd);
+  card.addEventListener('pointercancel',tarotDragEnd);
+}
+function tarotDragMove(e){
+  if(!_tarotDragging)return;
+  const d=_tarotDragging;
+  d.dx=e.clientX-d.startX;d.dy=e.clientY-d.startY;
+  d.card.style.transform='translate('+d.dx+'px,'+d.dy+'px) rotate('+(d.dx*0.06)+'deg)';
+}
+function tarotDragEnd(){
+  if(!_tarotDragging)return;
+  const d=_tarotDragging;
+  d.card.removeEventListener('pointermove',tarotDragMove);
+  d.card.removeEventListener('pointerup',tarotDragEnd);
+  d.card.removeEventListener('pointercancel',tarotDragEnd);
+  d.card.classList.remove('dragging');
+  const dist=Math.sqrt(d.dx*d.dx+d.dy*d.dy);
+  if(dist>85){
+    tarotReveal(d.card);
+  }else{
+    d.card.style.transition='transform .5s cubic-bezier(.34,1.56,.64,1)';
+    d.card.style.transform='translate(0,0) rotate(0deg)';
+  }
+  _tarotDragging=null;
+}
+function tarotReveal(card){
+  _tarotRevealed=true;
+  card.style.transition='transform .5s ease, opacity .5s ease';
+  const flyX=(Math.random()>.5?1:-1)*260;
+  card.style.transform='translate('+flyX+'px,-60px) rotate('+(flyX*.15)+'deg)';
+  card.style.opacity='0';
+  const deck=document.getElementById('tarotDeck');
+  Array.from(deck.querySelectorAll('.tarot-card-back')).forEach(function(c){if(c!==card){c.style.transition='opacity .4s ease';c.style.opacity='.25';}});
+  const pick=TAROT_DATA[Math.floor(Math.random()*TAROT_DATA.length)];
+  selTarot=pick.name+' — '+pick.title;
+  setTimeout(function(){
+    try{sfx('ok');}catch(e){}
+    const stage=document.getElementById('tarotStage');
+    if(stage){const r=stage.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,'#F2B441');}catch(e){}}
+    document.getElementById('trName').textContent=pick.name;
+    document.getElementById('trTitle').textContent=pick.title;
+    document.getElementById('trDesc').textContent=pick.desc;
+    const rev=document.getElementById('tarotReveal');if(rev)rev.style.display='flex';
+    const nbtn=document.getElementById('ntarot');if(nbtn)nbtn.style.display='inline-flex';
+    if(navigator.vibrate)navigator.vibrate([30,20,60]);
+  },420);
+}
 
-// PHILO
-function pickPhilo(t,v,id){sfx('tr');if(t==='f'){selF=v;['fl1','fl2','fl3','fl4'].forEach(i=>document.getElementById(i).classList.remove('selected'));}else{selA=v;['an1','an2','an3','an4'].forEach(i=>document.getElementById(i).classList.remove('selected'));}document.getElementById(id).classList.add('selected');if(selF&&selA)document.getElementById('nphilo').style.display='inline-flex';}
-function confirmPhilo(){sfx('ok');document.getElementById('cflval').textContent='Esensi Bunga: '+selF;document.getElementById('canval').textContent='Esensi Hewan: '+selA;go('sph','s3');}
+// ===== STAGE 6 — RACIK AURAMU (redesign dari grid pilihan bunga/hewan) =====
+const AURA_FLOWERS=[
+  {icon:'🌼',label:'Kamomil',value:'Kamomil (Resiliensi)',color:'#F6CB7A'},
+  {icon:'🪷',label:'Teratai',value:'Teratai (Kemurnian)',color:'#F1A094'},
+  {icon:'🌸',label:'Magnolia',value:'Magnolia (Martabat)',color:'#e8c8d0'},
+  {icon:'💜',label:'Lavendel',value:'Lavendel (Ketenangan)',color:'#8FCBEA'}
+];
+const AURA_ANIMALS=[
+  {icon:'🦋',label:'Kupu-Kupu',value:'Kupu-Kupu (Metamorfosis)',color:'#E8604C'},
+  {icon:'🐦',label:'Cendrawasih',value:'Cendrawasih (Keanggunan)',color:'#F2B441'},
+  {icon:'🦌',label:'Rusa',value:'Rusa (Intuisi)',color:'#F2B441'},
+  {icon:'🕊️',label:'Merpati',value:'Merpati (Kedamaian)',color:'#FFFDF7'}
+];
+let _auraPhase='flower',_auraAngle=0,_auraDragging=false;
+function initAuraStage(){
+  _auraPhase='flower';_auraAngle=0;_auraDragging=false;selF='';selA='';
+  const nbtn=document.getElementById('nphilo');if(nbtn)nbtn.style.display='none';
+  const sub=document.getElementById('auraSub');if(sub)sub.textContent='Putar lingkaran untuk memilih Bunga Jiwamu.';
+  const icon=document.getElementById('auraOrbIcon');if(icon)icon.textContent='✦';
+  const orb=document.getElementById('auraOrb');if(orb)orb.style.boxShadow='';
+  renderAuraZones();
+}
+function auraCurrentData(){return _auraPhase==='flower'?AURA_FLOWERS:AURA_ANIMALS;}
+function renderAuraZones(){
+  const dial=document.getElementById('auraDial');
+  if(!dial)return;
+  dial.innerHTML='';
+  const data=auraCurrentData(),n=data.length;
+  data.forEach(function(d,i){
+    const ang=i*(360/n);
+    const z=document.createElement('div');
+    z.className='aura-zone';
+    z.style.setProperty('--ang',ang+'deg');
+    z.dataset.idx=String(i);
+    z.innerHTML='<div class="az-ico">'+d.icon+'</div><div class="az-lbl">'+d.label+'</div>';
+    z.addEventListener('click',function(){auraSelect(i);});
+    dial.appendChild(z);
+  });
+  const handle=document.createElement('div');
+  handle.className='aura-handle';handle.id='auraHandle';
+  handle.style.transform='rotate(0deg) translate(100px)';
+  dial.appendChild(handle);
+  dial.onpointerdown=auraDragStart;
+}
+function auraDragStart(e){
+  _auraDragging=true;
+  const dial=document.getElementById('auraDial');
+  try{dial.setPointerCapture(e.pointerId);}catch(err){}
+  dial.addEventListener('pointermove',auraDragMove);
+  dial.addEventListener('pointerup',auraDragEnd);
+  dial.addEventListener('pointercancel',auraDragEnd);
+  auraDragMove(e);
+}
+function auraDragMove(e){
+  if(!_auraDragging)return;
+  const dial=document.getElementById('auraDial');
+  const r=dial.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let ang=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;
+  if(ang<0)ang+=360;
+  _auraAngle=ang;
+  const handle=document.getElementById('auraHandle');
+  if(handle)handle.style.transform='rotate('+ang+'deg) translate(100px)';
+  const data=auraCurrentData(),n=data.length,sectorAngle=360/n;
+  const nearest=Math.round(ang/sectorAngle)%n;
+  document.querySelectorAll('.aura-zone').forEach(function(z){z.classList.toggle('near',parseInt(z.dataset.idx,10)===nearest);});
+}
+function auraDragEnd(){
+  if(!_auraDragging)return;
+  _auraDragging=false;
+  const dial=document.getElementById('auraDial');
+  dial.removeEventListener('pointermove',auraDragMove);
+  dial.removeEventListener('pointerup',auraDragEnd);
+  dial.removeEventListener('pointercancel',auraDragEnd);
+  const data=auraCurrentData(),n=data.length,sectorAngle=360/n;
+  const nearest=Math.round(_auraAngle/sectorAngle)%n;
+  auraSelect(nearest);
+}
+function auraSelect(idx){
+  const data=auraCurrentData(),d=data[idx],n=data.length,sectorAngle=360/n,targetAngle=idx*sectorAngle;
+  const handle=document.getElementById('auraHandle');
+  if(handle)handle.style.transform='rotate('+targetAngle+'deg) translate(100px)';
+  document.querySelectorAll('.aura-zone').forEach(function(z){z.classList.toggle('picked',parseInt(z.dataset.idx,10)===idx);z.classList.remove('near');});
+  try{sfx('ok');}catch(e){}
+  const icon=document.getElementById('auraOrbIcon');
+  if(icon){icon.textContent=d.icon;icon.style.transform='scale(1.3)';setTimeout(function(){icon.style.transform='';},300);}
+  const orb=document.getElementById('auraOrb');if(orb)orb.style.boxShadow='0 0 50px '+d.color+'99, inset 0 0 24px rgba(255,255,255,.2)';
+  const stage=document.getElementById('auraStage');
+  if(stage){const r=stage.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,d.color);}catch(e){}}
+  if(navigator.vibrate)navigator.vibrate(20);
+  if(_auraPhase==='flower'){
+    selF=d.value;
+    setTimeout(function(){
+      _auraPhase='animal';
+      const sub=document.getElementById('auraSub');if(sub)sub.textContent='Sekarang, putar lingkaran untuk memilih Hewan Jiwamu.';
+      renderAuraZones();
+    },700);
+  }else{
+    selA=d.value;
+    setTimeout(function(){
+      const sub=document.getElementById('auraSub');if(sub)sub.textContent='Esensi jiwamu telah terbentuk ✦';
+      const nbtn=document.getElementById('nphilo');if(nbtn)nbtn.style.display='inline-flex';
+    },700);
+  }
+}
+function confirmAura(){
+  try{sfx('ok');}catch(e){}
+  document.getElementById('cflval').textContent='Esensi Bunga: '+selF;
+  document.getElementById('canval').textContent='Esensi Hewan: '+selA;
+  go('sph','s3');
+  setTimeout(initVowStage,650);
+}
 
-// CHOICE / DESTINY
-function wrongC(el){sfx('err');el.style.borderColor='rgba(232,96,76,.5)';showAlert('Taman ini mendeteksi kekuatanmu jauh melampaui ini. Pilihlah nomor 3! 🌸');}
-function rightC(el){sfx('ok');el.style.borderColor='var(--sage)';el.style.background='rgba(127,174,106,.08)';setTimeout(()=>go('s3','s3b'),500);}
-function pickDest(t,id){sfx('ok');selD=t;document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected'));document.getElementById(id).classList.add('selected');document.getElementById('npath').style.display='inline-flex';document.getElementById('cdyntitle').textContent='[ '+t+' ]';document.getElementById('dynbadge').textContent=t;}
+// ===== STAGE 7 — TAHAN UNTUK BERIKRAR (redesign dari pilihan benar/salah) =====
+const VOW_TEXT="Aku adalah perempuan luar biasa, tangguh, mandiri, dan layak atas segala kebahagiaan yang paling indah.";
+const VOW_HOLD_MS=2600;
+const VOW_RING_C=289;
+let _vowHolding=false,_vowStart=0,_vowRAF=null,_vowDone=false;
+function initVowStage(){
+  _vowHolding=false;_vowDone=false;
+  if(_vowRAF){cancelAnimationFrame(_vowRAF);_vowRAF=null;}
+  const txt=document.getElementById('vowText');if(txt)txt.textContent='';
+  const fill=document.getElementById('vowRingFill');if(fill)fill.style.strokeDashoffset=String(VOW_RING_C);
+  const lbl=document.getElementById('vowBtnLabel');if(lbl)lbl.textContent='TAHAN';
+  const hint=document.getElementById('vowHint');if(hint)hint.textContent='Tahan tombol sampai kalimatnya terucap penuh ✦';
+}
+function vowStart(e){
+  if(_vowDone)return;
+  e.preventDefault();
+  _vowHolding=true;_vowStart=performance.now();
+  const lbl=document.getElementById('vowBtnLabel');if(lbl)lbl.textContent='...';
+  if(navigator.vibrate)navigator.vibrate(15);
+  vowTick();
+}
+function vowTick(){
+  if(!_vowHolding)return;
+  const elapsed=performance.now()-_vowStart;
+  const p=Math.min(1,elapsed/VOW_HOLD_MS);
+  const fill=document.getElementById('vowRingFill');if(fill)fill.style.strokeDashoffset=String(VOW_RING_C*(1-p));
+  const chars=Math.floor(p*VOW_TEXT.length);
+  const txt=document.getElementById('vowText');if(txt)txt.textContent=VOW_TEXT.slice(0,chars);
+  if(p>=1){vowComplete();return;}
+  _vowRAF=requestAnimationFrame(vowTick);
+}
+function vowRelease(){
+  if(_vowDone||!_vowHolding)return;
+  _vowHolding=false;
+  if(_vowRAF){cancelAnimationFrame(_vowRAF);_vowRAF=null;}
+  const fill=document.getElementById('vowRingFill');if(fill)fill.style.strokeDashoffset=String(VOW_RING_C);
+  const txt=document.getElementById('vowText');if(txt)txt.textContent='';
+  const lbl=document.getElementById('vowBtnLabel');if(lbl)lbl.textContent='TAHAN';
+  const hint=document.getElementById('vowHint');if(hint)hint.textContent='Belum selesai — tahan terus tanpa dilepas ya ✦';
+}
+function vowComplete(){
+  _vowDone=true;_vowHolding=false;
+  const txt=document.getElementById('vowText');if(txt)txt.textContent=VOW_TEXT;
+  const lbl=document.getElementById('vowBtnLabel');if(lbl)lbl.textContent='✦';
+  const hint=document.getElementById('vowHint');if(hint)hint.textContent='Ikrar terucap. Jiwa taman ini mendengarmu ✦';
+  try{sfx('ok');}catch(e){}
+  const btn=document.getElementById('vowBtn');
+  if(btn){const r=btn.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,'#7FAE6A');}catch(e){}}
+  if(navigator.vibrate)navigator.vibrate([40,20,40,20,120]);
+  setTimeout(function(){go('s3','s3b');setTimeout(initWheelStage,650);},1600);
+}
+document.addEventListener('DOMContentLoaded',function(){
+  const btn=document.getElementById('vowBtn');
+  if(!btn)return;
+  btn.addEventListener('pointerdown',vowStart);
+  btn.addEventListener('pointerup',vowRelease);
+  btn.addEventListener('pointerleave',vowRelease);
+  btn.addEventListener('pointercancel',vowRelease);
+});
+
+// ===== STAGE 8 — RODA TAKDIR (redesign dari grid kartu gelar) =====
+const DESTINY_DATA=[
+  {title:'The Moonlit Gardener',desc:'Jiwa penjaga taman bulan yang merawat impian di bawah cahaya rembulan.',icon:'🌙',color:'#5FAEDB'},
+  {title:'The Botanical Dreamer',desc:'Pribadi pemimpi yang menemukan keajaiban dalam setiap helai daun dan musim.',icon:'🌿',color:'#7FAE6A'},
+  {title:'The Wildflower Sovereign',desc:'Perempuan berdaulat, mekar liar dan indah, tak terbendung oleh badai apapun.',icon:'🌼',color:'#F2B441'}
+];
+let _wheelSpinning=false,_wheelSpun=false;
+function initWheelStage(){
+  _wheelSpinning=false;_wheelSpun=false;
+  const wheel=document.getElementById('destinyWheel');
+  if(wheel){
+    wheel.innerHTML='';
+    DESTINY_DATA.forEach(function(d,i){
+      const ang=i*(360/DESTINY_DATA.length)+(360/DESTINY_DATA.length)/2;
+      const ic=document.createElement('div');
+      ic.className='wheel-icon';
+      ic.style.setProperty('--wang',ang+'deg');
+      ic.textContent=d.icon;
+      wheel.appendChild(ic);
+    });
+    wheel.style.transition='none';
+    wheel.style.transform='rotate(0deg)';
+    void wheel.offsetWidth;
+    wheel.style.transition='';
+  }
+  const btn=document.getElementById('wheelSpinBtn');if(btn){btn.style.display='inline-flex';btn.disabled=false;}
+  const rev=document.getElementById('destinyReveal');if(rev)rev.style.display='none';
+  const np=document.getElementById('npath');if(np)np.style.display='none';
+}
+function spinDestinyWheel(){
+  if(_wheelSpinning||_wheelSpun)return;
+  _wheelSpinning=true;
+  try{sfx('tr');}catch(e){}
+  const btn=document.getElementById('wheelSpinBtn');if(btn)btn.disabled=true;
+  const targetIndex=Math.floor(Math.random()*DESTINY_DATA.length);
+  const sectorAngle=360/DESTINY_DATA.length;
+  const sectorCenter=targetIndex*sectorAngle+sectorAngle/2;
+  const extraSpins=(5+Math.random()*2)*360;
+  const finalR=extraSpins+(360-sectorCenter);
+  const wheel=document.getElementById('destinyWheel');
+  if(wheel){
+    wheel.style.transition='transform 4.2s cubic-bezier(.12,.72,.1,1)';
+    wheel.style.transform='rotate('+finalR+'deg)';
+  }
+  if(navigator.vibrate)navigator.vibrate(20);
+  setTimeout(function(){
+    _wheelSpinning=false;_wheelSpun=true;
+    const d=DESTINY_DATA[targetIndex];
+    selD=d.title;
+    const di=document.getElementById('destinyIcon');if(di)di.textContent=d.icon;
+    const dt=document.getElementById('destinyTitle');if(dt)dt.textContent=d.title;
+    const dd=document.getElementById('destinyDesc');if(dd)dd.textContent=d.desc;
+    const rev=document.getElementById('destinyReveal');if(rev)rev.style.display='flex';
+    const cdt=document.getElementById('cdyntitle');if(cdt)cdt.textContent='[ '+d.title+' ]';
+    const db=document.getElementById('dynbadge');if(db)db.textContent=d.title;
+    try{sfx('ok');}catch(e){}
+    if(wheel){const r=wheel.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,d.color);}catch(e){}}
+    if(navigator.vibrate)navigator.vibrate([30,20,80]);
+    const wsb=document.getElementById('wheelSpinBtn');if(wsb)wsb.style.display='none';
+    const np=document.getElementById('npath');if(np)np.style.display='inline-flex';
+  },4300);
+}
 
 // CINEMATIC
 const PTXTS=["Dua puluh tahun bukanlah sekadar angka —\nitu adalah ribuan pagi yang kamu pilih untuk bangkit.","Setiap versi dirimu yang pernah ada\ntelah membawa kamu ke titik yang tepat ini.","Dan kamu, Naffa,\nadalah karya paling nyata yang pernah semesta ciptakan."];
@@ -2518,9 +2861,10 @@ function resetAll(){
   try{const ab=document.getElementById('asmbar');if(ab)ab.style.width='0%';}catch(e){}
   try{const ap=document.getElementById('asmpct');if(ap)ap.textContent='🌸 0/20 BUNGA';}catch(e){}
   try{const wh=document.getElementById('wgl-hint');if(wh)wh.style.opacity='1';}catch(e){}
-  try{document.querySelectorAll('.tcard').forEach(c=>{c.classList.remove('flipped');c.style.opacity='';c.style.filter='';c.style.pointerEvents='';});}catch(e){}
-  try{document.querySelectorAll('.phopt').forEach(c=>c.classList.remove('selected'));}catch(e){}
-  try{document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected'));}catch(e){}
+  try{if(typeof initTarotStage==='function')initTarotStage();}catch(e){}
+  try{if(typeof initAuraStage==='function')initAuraStage();}catch(e){}
+  try{if(typeof initVowStage==='function')initVowStage();}catch(e){}
+  try{if(typeof initWheelStage==='function')initWheelStage();}catch(e){}
   try{document.getElementById('cflval').textContent='Esensi Bunga: —';}catch(e){}
   try{document.getElementById('canval').textContent='Esensi Hewan: —';}catch(e){}
   try{const eb=document.getElementById('entbtn');if(eb){eb.style.display='none';eb.disabled=false;eb.innerHTML='<span aria-hidden="true">✦</span> Masuki Taman';}}catch(e){}
@@ -3034,6 +3378,10 @@ function devSkip(id){
   if(id==='s9b')setTimeout(initWebGLFlowers,900);
   if(id==='s13')setTimeout(confetti,700);
   if(id==='scd')startCD();
+  if(id==='str')initTarotStage();
+  if(id==='sph')initAuraStage();
+  if(id==='s3')initVowStage();
+  if(id==='s3b')initWheelStage();
   if(id==='s10'){setTimeout(function(){initCakeCanvas();var gate=document.getElementById('mic-gate');if(gate)gate.style.display='flex';},900);}
   if(id==='sphoto'){setTimeout(initPhotobooth,300);}
 }
@@ -3927,6 +4275,3 @@ document.addEventListener('fullscreenchange',function(){
     pwinput.addEventListener('input', function(){ pwerr.classList.remove('lk-show'); });
   }
 })();
-
-
-
