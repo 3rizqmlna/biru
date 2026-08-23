@@ -2110,7 +2110,24 @@ function initWebGLFlowers(){
         vertexShader:document.getElementById('wgl-vertex-shader').textContent,
         fragmentShader:document.getElementById('wgl-fragment-shader').textContent
       });
-      basicMaterial=new THREE.MeshBasicMaterial({transparent:true});
+      // basicMaterial ini hanya dipakai di tahap TERAKHIR — menampilkan hasil render
+      // (renderTargets) ke layar/canvas asli. Isi tekstur dari shaderMaterial di atas
+      // bersifat "premultiplied" (warna sudah dikalikan cakupan/alpha-nya, karena teksturnya
+      // juga dipakai ulang sebagai buffer akumulasi jejak bunga tiap frame — lihat komentar
+      // di wgl-fragment-shader). Makanya di sini dipasang CustomBlending dengan faktor sumber
+      // ONE (bukan SRC_ALPHA bawaan) supaya tidak "digandakan" peredupannya saat dicampur ke
+      // latar belakang — ini yang memperbaiki tepian bunga yang tadinya terlihat kehitaman,
+      // tanpa mengubah/mengganggu perhitungan warna di dalam shader (yang sensitif kalau
+      // diubah karena teksturnya dipakai berulang sebagai umpan balik antar frame).
+      basicMaterial=new THREE.MeshBasicMaterial({
+        transparent:true,
+        blending:THREE.CustomBlending,
+        blendEquation:THREE.AddEquation,
+        blendSrc:THREE.OneFactor,
+        blendDst:THREE.OneMinusSrcAlphaFactor,
+        blendSrcAlpha:THREE.OneFactor,
+        blendDstAlpha:THREE.OneMinusSrcAlphaFactor
+      });
       const geo=new THREE.PlaneGeometry(2,2);
       sceneBasic.add(new THREE.Mesh(geo,basicMaterial));
       sceneShader.add(new THREE.Mesh(geo,shaderMaterial));
