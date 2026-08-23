@@ -344,7 +344,6 @@
     <div class="dcard" id="p2" onclick="pickDest('The Botanical Dreamer','p2')"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 10 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="#7FAE6A" opacity=".8"/><line x1="20" y1="34" x2="20" y2="14" stroke="#B2CEA6" stroke-width="1.5" stroke-linecap="round"/><line x1="20" y1="26" x2="14" y2="20" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round" opacity=".7"/><line x1="20" y1="22" x2="26" y2="18" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round" opacity=".7"/></svg></div><h4>Botanical Dreamer</h4><p>Pribadi pemimpi yang menemukan keajaiban dalam setiap helai daun dan musim.</p></div>
     <div class="dcard" id="p3" onclick="pickDest('The Wildflower Sovereign','p3')"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none"><circle cx="20" cy="20" r="7" fill="#F2B441" opacity=".9"/><g><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(45 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(90 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(135 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(180 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(225 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(270 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(315 20 20)"/></g><circle cx="20" cy="20" r="7" fill="#F2B441" opacity=".9"/></svg></div><h4>Wildflower Sovereign</h4><p>Perempuan berdaulat, mekar liar dan indah, tak terbendung oleh badai apapun.</p></div>
   </div>
-  <p class="destiny-synthesis" id="destinySynthesis"></p>
   <button class="btn btn-bl" id="npath" onclick="startCin()" style="display:none;padding:12px 38px;">Kenakan Mahkotaku ✦</button>
 </div>
 
@@ -701,9 +700,10 @@ float snoise(vec2 v) {
     return 130.0 * dot(m, g);
 }
 
-// Siklus 10 warna cerah & jenuh berdasarkan t (0..1) — menggantikan quad_palette_mix
-// (4 warna, agak pucat) supaya variasi warna tiap bunga jauh lebih kaya dan hidup.
-vec3 palette10_mix(vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec3 c4, vec3 c5, vec3 c6, vec3 c7, vec3 c8, vec3 c9, float t) {
+// Siklus 10 warna dari palet situs berdasarkan t (0..1) — dipakai supaya tiap
+// bunga bisa mendapat salah satu dari 10 warna indah yang berbeda-beda,
+// bukan cuma campuran 4 warna seperti sebelumnya.
+vec3 decapalette_mix(vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec3 c4, vec3 c5, vec3 c6, vec3 c7, vec3 c8, vec3 c9, float t) {
     float tt = clamp(t, 0., 1.) * 9.0;
     vec3 res = mix(c0, c1, clamp(tt - 0.0, 0., 1.));
     res = mix(res, mix(c1, c2, clamp(tt - 1.0, 0., 1.)), step(1.0, tt));
@@ -762,13 +762,24 @@ void main() {
     uv.x *= u_ratio;
     vec2 cursor = vUv - u_cursor.xy;
     cursor.x *= u_ratio;
-    // 10 warna cerah & jenuh (bukan pastel/pucat) — coral, mustard, lemon, hijau segar,
-    // toska, biru langit, periwinkle, lavender, pink mawar, oranye sunset.
-    vec3 c1=vec3(1.00,0.44,0.38), c2=vec3(1.00,0.76,0.27), c3=vec3(1.00,0.93,0.35), c4=vec3(0.55,0.85,0.42), c5=vec3(0.20,0.80,0.72);
-    vec3 c6=vec3(0.31,0.72,0.97), c7=vec3(0.56,0.56,0.98), c8=vec3(0.76,0.53,0.98), c9=vec3(0.98,0.42,0.68), c10=vec3(1.00,0.55,0.30);
-    vec3 stem_color = mix(vec3(0.32,0.68,0.34), c2, .3 * u_stop_randomizer[0]);
-    vec3 flower_color = palette10_mix(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10, u_stop_randomizer[1]);
-    vec3 flower_color_back = palette10_mix(c6,c7,c8,c9,c10,c1,c2,c3,c4,c5, u_stop_randomizer[0]);
+    // 10 warna bunga berbeda, dipilih vivid & saturated (bukan varian pucat/pastel)
+    // supaya kontras dan enak dilihat, tidak jadi keputihan saat bertumpuk di shader.
+    vec3 c_coral=vec3(.94,.30,.24);   // Merah koral cerah
+    vec3 c_magenta=vec3(.90,.20,.52); // Magenta/fuchsia
+    vec3 c_gold=vec3(.98,.66,.10);    // Kuning keemasan pekat
+    vec3 c_orange=vec3(.96,.46,.08);  // Oranye cerah
+    vec3 c_grass=vec3(.32,.66,.28);   // Hijau daun pekat
+    vec3 c_teal=vec3(.10,.62,.52);    // Hijau toska/emerald
+    vec3 c_sky=vec3(.16,.56,.86);     // Biru langit pekat
+    vec3 c_indigo=vec3(.30,.34,.82);  // Biru indigo
+    vec3 c_violet=vec3(.58,.28,.85);  // Ungu violet
+    vec3 c_rose=vec3(.85,.24,.34);    // Merah mawar pekat
+    vec3 stem_color = mix(c_grass, c_gold, .3 * u_stop_randomizer[0]);
+    vec3 flower_color = decapalette_mix(c_coral, c_magenta, c_gold, c_orange, c_grass, c_teal, c_sky, c_indigo, c_violet, c_rose, u_stop_randomizer[1]);
+    // Warna belakang kelopak SENGAJA dibuat dari hue yang sama seperti warna depan
+    // (cuma digelapkan), bukan warna acak dari ujung palet lain — supaya pinggiran
+    // kelopak jadi shading natural yang menyatu, bukan warna lain yang bentrok/aneh.
+    vec3 flower_color_back = flower_color * 0.42 + vec3(.03,.02,.05);
     float angle = .5 * (u_stop_randomizer[0] - .5);
     float stem_shape = get_stem_shape(cursor, uv, .003, angle);
     stem_shape += get_stem_shape(cursor + vec2(0., .2 + .5 * u_stop_randomizer[0]), uv, .003, angle);
@@ -800,16 +811,8 @@ void main() {
     alpha = max(alpha, flower_back_shape);
     alpha = max(alpha, flower_front_shape);
     alpha *= u_clean;
-    alpha = clamp(alpha, 0., 1.);
 
-    // PENTING: jangan bagi "color" dengan alpha di sini. Tekstur hasil render ini juga
-    // dibaca ulang sebagai u_texture di frame berikutnya (buffer akumulasi jejak bunga),
-    // jadi warnanya harus tetap dalam skala "premultiplied" seperti semula supaya feedback
-    // loop-nya stabil — kalau dibagi alpha, piksel bertepi tipis (alpha kecil) meledak jadi
-    // sangat terang, lalu nilai itu ikut terekam & menumpuk tiap frame sampai semua putih.
-    // Perbaikan pinggiran hitam dilakukan di tahap render-ke-layar (lihat initWebGLFlowers
-    // di main.js: basicMaterial dipasang CustomBlending yang cocok untuk warna premultiplied).
-    gl_FragColor = vec4(color, alpha);
+    gl_FragColor = vec4(color, clamp(alpha, 0., 1.));
 }
 </script>
 <script type="x-shader/x-vertex" id="wgl-vertex-shader">
