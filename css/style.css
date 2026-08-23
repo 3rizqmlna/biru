@@ -222,24 +222,6 @@ h2{font-family:'Cormorant Garamond',serif;font-weight:500;}
 .bchoice{display:block;width:100%;max-width:480px;text-align:left;background:rgba(12,22,38,.7);border:1px solid rgba(242,180,65,.15);border-radius:14px;padding:14px 20px;color:rgba(255,253,247,.7);font-family:'Josefin Sans',sans-serif;font-size:.8rem;line-height:1.5;cursor:pointer;margin:5px 0;transition:all .3s ease;}
 .bchoice:hover{border-color:rgba(242,180,65,.35);background:rgba(242,180,65,.06);color:var(--cream);}
 
-/* GERBANG JIWA — efek pintu salah bergetar/meredup & pintu benar bercahaya,
-   menggantikan interaksi klik-lihat-alert yang datar sebelumnya */
-.bchoice.wrong-flash{background:rgba(232,96,76,.1)!important;border-color:rgba(232,96,76,.5)!important;color:rgba(255,220,215,.85)!important;}
-@keyframes doorShake{
-  0%,100%{transform:translateX(0);}
-  20%{transform:translateX(-9px) rotate(-.6deg);}
-  40%{transform:translateX(8px) rotate(.6deg);}
-  60%{transform:translateX(-6px);}
-  80%{transform:translateX(4px);}
-}
-.bchoice.right-open{border-color:var(--sage)!important;background:rgba(127,174,106,.1)!important;box-shadow:0 0 26px rgba(127,174,106,.25);}
-/* Kilau cahaya penuh layar saat gerbang yang benar terbuka */
-.gate-open-fx{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;pointer-events:none;
-  background:radial-gradient(circle at 50% 50%,rgba(255,250,220,0) 0%,rgba(255,250,220,0) 100%);opacity:0;transition:opacity .6s ease;}
-.gate-open-fx.show{opacity:1;background:radial-gradient(circle at 50% 50%,rgba(255,250,220,.55) 0%,rgba(246,203,122,.16) 42%,rgba(0,0,0,0) 72%);}
-.gate-open-txt{font-family:'Cormorant Garamond',serif;font-size:clamp(1.2rem,4vw,1.9rem);letter-spacing:7px;color:#fffdf7;text-shadow:0 0 30px rgba(246,203,122,.9);opacity:0;transform:scale(.85);transition:opacity .6s ease .15s,transform .6s ease .15s;text-align:center;padding:0 20px;}
-.gate-open-fx.show .gate-open-txt{opacity:1;transform:scale(1);}
-
 /* DESTINY */
 .dgrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:720px;margin:14px 0;}
 .dcard{background:rgba(12,22,38,.82);border:1px solid rgba(242,180,65,.2);border-radius:20px;padding:22px 18px;width:200px;cursor:pointer;transition:all .35s ease;text-align:center;}
@@ -248,15 +230,6 @@ h2{font-family:'Cormorant Garamond',serif;font-weight:500;}
 .dico{font-size:2.2rem;margin-bottom:10px;}
 .dcard h4{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--cream);margin-bottom:5px;}
 .dcard p{font-size:.65rem;color:rgba(255,253,247,.55);line-height:1.5;}
-
-/* RANGKUMAN PERJALANAN — merangkai pilihan tarot, esensi bunga/hewan, dan gelar
-   takdir jadi satu kalimat puitis begitu gelar dipilih, supaya pilihan-pilihan
-   sebelumnya terasa berbuah, bukan sekadar checklist yang lewat begitu saja. */
-.destiny-synthesis{max-width:520px;width:100%;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:.98rem;line-height:1.85;color:rgba(255,253,247,.85);background:rgba(12,22,38,.55);border:1px solid rgba(242,180,65,.22);border-radius:16px;padding:16px 24px;margin:8px auto 2px;opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;}
-.destiny-synthesis:empty{display:none;}
-.destiny-synthesis.show{opacity:1;transform:translateY(0);}
-.destiny-synthesis em{color:var(--gold-lt);font-style:italic;}
-.destiny-synthesis strong{color:var(--rose-lt);}
 
 /* LETTER */
 .lscroll{background:rgba(12,22,38,.9);border:1px solid rgba(242,180,65,.2);border-radius:20px;padding:32px 36px;max-width:600px;width:100%;max-height:65vh;overflow-y:auto;text-align:left;position:relative;}
@@ -873,3 +846,52 @@ html.nm-revisit #welcomeback{opacity:1!important;pointer-events:auto!important;t
   .sm-body .sm-p:last-child{margin-bottom:0;}
   .sm-sig{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(232,96,76,.6);}
   .sm-petals{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:24px;overflow:hidden;}
+
+/* ==== block break ==== */
+
+/* ===== STAGE 5 — KOCOK & TARIK KARTU (redesign tarot) ===== */
+.tarot-stage{position:relative;width:100%;max-width:340px;height:260px;margin:18px auto 6px;display:flex;align-items:center;justify-content:center;}
+.tarot-deck{position:relative;width:132px;height:198px;}
+.tarot-card-back{position:absolute;top:0;left:0;width:132px;height:198px;border-radius:14px;background:linear-gradient(160deg,rgba(16,30,51,.95),rgba(12,22,38,.98));border:1px solid rgba(242,180,65,.3);box-shadow:0 10px 26px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;transition:box-shadow .3s ease,border-color .3s ease;touch-action:none;}
+.tarot-card-back.shuffled{cursor:grab;box-shadow:0 0 24px rgba(242,180,65,.35);border-color:rgba(242,180,65,.6);animation:tarotPulse 1.8s ease-in-out infinite;}
+.tarot-card-back.dragging{cursor:grabbing;transition:none!important;z-index:50!important;animation:none;}
+.tarot-card-back .tcb-deco{font-size:1.9rem;opacity:.6;}
+@keyframes tarotPulse{0%,100%{box-shadow:0 0 16px rgba(242,180,65,.28);}50%{box-shadow:0 0 30px rgba(242,180,65,.5);}}
+@keyframes tarotShuffleShake{0%,100%{transform:translateX(0) rotate(0);}25%{transform:translateX(-4px) rotate(-2deg);}75%{transform:translateX(4px) rotate(2deg);}}
+.tarot-stage.shuffling{animation:tarotShuffleShake .12s linear infinite;}
+.tarot-reveal{display:flex;justify-content:center;margin:8px 0;}
+.tarot-reveal-inner{background:linear-gradient(160deg,rgba(232,96,76,.1),rgba(16,30,51,.95));border:1px solid rgba(232,96,76,.35);border-radius:16px;padding:22px 26px;max-width:360px;text-align:center;animation:lkIn .6s cubic-bezier(.16,1,.3,1) both;}
+.tarot-reveal-inner .tfname{font-size:.55rem;letter-spacing:2px;color:rgba(242,180,65,.6);font-family:'Space Mono',monospace;margin-bottom:5px;}
+.tarot-reveal-inner h4{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--rose-lt);margin-bottom:8px;}
+.tarot-reveal-inner p{font-size:.78rem;color:rgba(255,253,247,.78);line-height:1.6;}
+
+/* ===== STAGE 6 — RACIK AURAMU (redesign esensi bunga/hewan) ===== */
+.aura-stage{position:relative;width:280px;height:280px;margin:16px auto;}
+.aura-orb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,253,247,.5),rgba(242,180,65,.32) 45%,rgba(242,180,65,.08) 75%);box-shadow:0 0 34px rgba(242,180,65,.3),inset 0 0 18px rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;transition:box-shadow 1s ease;z-index:2;pointer-events:none;}
+.aura-orb-icon{font-size:2rem;filter:drop-shadow(0 0 10px rgba(255,253,247,.5));transition:transform .4s ease;}
+.aura-dial{position:absolute;inset:0;border-radius:50%;border:1px dashed rgba(242,180,65,.22);touch-action:none;}
+.aura-zone{position:absolute;top:50%;left:50%;width:66px;height:66px;margin:-33px;transform:rotate(var(--ang)) translate(100px) rotate(calc(-1 * var(--ang)));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:16px;background:rgba(12,22,38,.75);border:1px solid rgba(242,180,65,.2);cursor:pointer;transition:all .3s ease;}
+.aura-zone:hover,.aura-zone.near{border-color:rgba(242,180,65,.6);background:rgba(242,180,65,.1);}
+.aura-zone.picked{border-color:var(--gold);background:rgba(242,180,65,.18);box-shadow:0 0 18px rgba(242,180,65,.3);}
+.aura-zone .az-ico{font-size:1.25rem;}
+.aura-zone .az-lbl{font-size:.48rem;letter-spacing:1px;color:rgba(255,253,247,.7);font-family:'Space Mono',monospace;text-align:center;}
+.aura-handle{position:absolute;top:50%;left:50%;width:15px;height:15px;margin:-7.5px;border-radius:50%;background:var(--gold-lt);box-shadow:0 0 12px rgba(246,203,122,.8);transform:rotate(0deg) translate(100px);transition:transform .5s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:3;}
+
+/* ===== STAGE 7 — TAHAN UNTUK BERIKRAR (redesign pilihan identitas) ===== */
+.vow-text{min-height:3.2em;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.02rem;color:var(--gold-lt);line-height:1.6;margin:10px 0 14px;text-align:center;}
+.vow-btn-wrap{display:flex;justify-content:center;margin:6px 0;}
+.vow-btn{position:relative;width:94px;height:94px;border-radius:50%;background:rgba(12,22,38,.85);border:1px solid rgba(242,180,65,.3);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;touch-action:none;}
+.vow-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+.vow-ring-bg{fill:none;stroke:rgba(242,180,65,.15);stroke-width:5;}
+.vow-ring-fill{fill:none;stroke:var(--gold-lt);stroke-width:5;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:289;transition:stroke-dashoffset .05s linear;}
+.vow-btn-label{position:relative;z-index:2;font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:2px;color:var(--gold-lt);}
+.vow-hint{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:1.5px;color:rgba(255,253,247,.45);margin-top:14px;text-align:center;}
+
+/* ===== STAGE 8 — RODA TAKDIR (redesign kartu gelar) ===== */
+.wheel-stage{position:relative;width:230px;height:230px;margin:14px auto 2px;}
+.wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:1.05rem;color:var(--gold-lt);z-index:4;filter:drop-shadow(0 0 6px rgba(242,180,65,.6));}
+.destiny-wheel{position:relative;width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,rgba(95,174,219,.55) 0 120deg,rgba(127,174,106,.55) 120deg 240deg,rgba(242,180,65,.55) 240deg 360deg);border:2px solid rgba(242,180,65,.4);box-shadow:0 15px 45px rgba(0,0,0,.4),inset 0 0 30px rgba(0,0,0,.3);}
+.wheel-icon{position:absolute;top:50%;left:50%;width:38px;height:38px;margin:-19px;transform:rotate(var(--wang)) translate(82px) rotate(calc(-1 * var(--wang)));display:flex;align-items:center;justify-content:center;font-size:1.4rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4));}
+.destiny-reveal{display:flex;flex-direction:column;align-items:center;text-align:center;max-width:360px;margin:14px auto 0;animation:lkIn .6s cubic-bezier(.16,1,.3,1) both;}
+.destiny-reveal h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--cream);margin-bottom:6px;}
+.destiny-reveal p{font-size:.72rem;color:rgba(255,253,247,.6);line-height:1.6;}
