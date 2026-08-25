@@ -271,98 +271,75 @@
     <div class="tblock"><span class="tval" id="cds">00</span><span class="tlbl">Detik</span></div>
   </div>
   <p style="font-size:.62rem;font-family:'Space Mono',monospace;color:rgba(242,180,65,.4);letter-spacing:1.5px;" id="livems">MENGHITUNG WAKTU...</p>
-  <button class="btn btn-bl" onclick="if(cdInt){clearInterval(cdInt);cdInt=null;}go('scd','str')" style="margin-top:20px;padding:12px 34px;">Masuki Gerbang Ramalan →</button>
+  <button class="btn btn-bl" onclick="if(cdInt){clearInterval(cdInt);cdInt=null;}go('scd','str');setTimeout(initTarotStage,650);" style="margin-top:20px;padding:12px 34px;">Masuki Gerbang Ramalan →</button>
 </div>
 
-<!-- STR TAROT -->
+<!-- STR — PETA BINTANG (tap reflex, bukan grid pilihan) -->
 <div class="screen" id="str">
   <div class="rbg" style="margin-bottom:10px;">
-    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--rose);margin-bottom:5px;">✦ KARTU RAMALAN BULAN</div>
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Pilih Satu Kartu Untukmu</h2>
-    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:460px;margin:5px auto 0;line-height:1.6;">Biarkan jarimu mengikuti bisikan intuitifmu.</p>
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--rose);margin-bottom:5px;">✦ PETA BINTANG TAMAN</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Rangkai Rasi Bintangmu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:460px;margin:5px auto 0;line-height:1.6;" id="starSub">Sentuh setiap bintang secepat mungkin saat ia mulai bersinar ✦</p>
   </div>
-  <div class="tgrid2">
-    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE SUN</div><h4>Sang Mentari</h4><p>Cahayamu akan menerangi setiap ruang yang kamu masuki. Kelimpahan dan kejelasan menanti.</p></div></div></div>
-    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE STAR</div><h4>Bintang Petunjuk</h4><p>Impian yang kamu peluk erat di malam sepi akan mulai mewujud. Kamu adalah cahaya penuntun dirimu sendiri.</p></div></div></div>
-    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE EMPRESS</div><h4>Sang Ratu Bunga</h4><p>Kedewasaan membawa keanggunan raga dan kematangan jiwa. Kekuasaan atas kebahagiaanmu kini milikmu.</p></div></div></div>
-    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE MOON</div><h4>Rembulan Abadi</h4><p>Siklus baru membawa keberuntungan. Segala lelah bertransformasi menjadi kekuatan tak terduga.</p></div></div></div>
-    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE WORLD</div><h4>Dunia Hijau</h4><p>Kebijaksanaan batinmu meningkat. Kamu akan dikelilingi perlindungan dan harmoni yang kokoh.</p></div></div></div>
-    <div class="tcard" onclick="flipTarot(this)"><div class="tinner"><div class="tface tfront"><div class="tfdeco"><svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" fill="none" stroke="#F2B441" stroke-width="1" opacity=".45"/><path d="M24 12a9 9 0 1 0 0 16 7 7 0 1 1 0-16z" fill="#F6CB7A" opacity=".55"/><circle cx="13" cy="14" r="1.2" fill="#F6CB7A" opacity=".7"/><circle cx="28" cy="27" r="1" fill="#F6CB7A" opacity=".5"/></svg></div></div><div class="tface tback"><div class="tfname" style="margin-bottom:5px;">THE LOVERS</div><h4>Sang Kupu-Kupu</h4><p>Kasih sayang tulus dan penerimaan utuh terhadap dirimu akan datang memeluk linimasamu.</p></div></div></div>
+  <div class="star-stage" id="starStage">
+    <svg class="star-lines" viewBox="0 0 300 230" preserveAspectRatio="none"><path id="starPath" d=""></path></svg>
   </div>
-  <button class="btn btn-bl" id="ntarot" onclick="go('str','sph')" style="display:none;padding:12px 34px;">Lanjutkan Penjelajahan →</button>
-  <p id="strHintBox" style="display:none;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--rose);letter-spacing:1px;background:rgba(232,96,76,.08);border:1px solid rgba(232,96,76,.2);border-radius:10px;padding:8px 14px;max-width:320px;line-height:1.6;text-align:center;margin-top:8px;"></p>
-  <button class="btn-hint" id="strHintBtn" onclick="strShowHint()" style="margin-top:6px;border-color:rgba(232,96,76,.3);color:rgba(232,96,76,.8);">✦ butuh petunjuk?</button>
+  <div class="tarot-reveal" id="tarotReveal" style="display:none;">
+    <div class="tarot-reveal-inner">
+      <div class="tfname" id="trName"></div>
+      <h4 id="trTitle"></h4>
+      <p id="trDesc"></p>
+    </div>
+  </div>
+  <button class="btn btn-bl" id="ntarot" onclick="go('str','sph');setTimeout(initAuraStage,650);" style="display:none;padding:12px 34px;">Lanjutkan Penjelajahan →</button>
 </div>
 
-<!-- SPH PHILO -->
+<!-- SPH — NAFAS TAMAN (breathing hold, bukan grid pilihan) -->
 <div class="screen" id="sph">
   <div class="rbg" style="margin-bottom:10px;">
-    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:5px;">✦ ESENSI JIWA</div>
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Pilih Dua Simbol Batinmu</h2>
-    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:480px;margin:5px auto 0;line-height:1.6;">Pilihanmu akan diabadikan dalam sertifikatmu.</p>
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--gold);margin-bottom:5px;">✦ NAFAS TAMAN</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Ikuti Irama Taman</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:480px;margin:5px auto 0;line-height:1.6;" id="breathSub">Tahan sentuhanmu di lingkaran, dan biarkan napasmu mengikuti gerak taman selama tiga siklus.</p>
   </div>
-  <div class="phwrap">
-    <div class="phcol">
-      <h3>Bunga Jiwa</h3>
-      <div class="phopt" id="fl1" data-value="Kamomil (Resiliensi)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(60 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(120 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(180 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(240 16 16)"/><ellipse cx="16" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".8" transform="rotate(300 16 16)"/><circle cx="16" cy="16" r="4.5" fill="#F2B441"/></svg></div><div class="phtxt"><h4>Kamomil</h4><p>Tumbuh anggun di tengah badai kehidupan.</p></div></div>
-      <div class="phopt" id="fl2" data-value="Teratai (Kemurnian)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#E8604C" opacity=".75"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#F1A094" opacity=".7" transform="rotate(72 16 16)"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#E8604C" opacity=".75" transform="rotate(144 16 16)"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#F1A094" opacity=".7" transform="rotate(216 16 16)"/><ellipse cx="16" cy="9" rx="4.5" ry="8" fill="#E8604C" opacity=".75" transform="rotate(288 16 16)"/><circle cx="16" cy="16" r="4" fill="#FFFDF7"/></svg></div><div class="phtxt"><h4>Teratai</h4><p>Lahirkan ketenangan dari air yang paling keruh.</p></div></div>
-      <div class="phopt" id="fl3" data-value="Magnolia (Martabat)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#F1A094" opacity=".85"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#e8c8d0" opacity=".8" transform="rotate(60 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#F1A094" opacity=".85" transform="rotate(120 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#e8c8d0" opacity=".8" transform="rotate(180 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#F1A094" opacity=".85" transform="rotate(240 16 16)"/><ellipse cx="16" cy="8" rx="3.5" ry="6" fill="#e8c8d0" opacity=".8" transform="rotate(300 16 16)"/><circle cx="16" cy="16" r="3.8" fill="#FFFDF7"/></svg></div><div class="phtxt"><h4>Magnolia</h4><p>Ketekunan abadi dan kecantikan melampaui waktu.</p></div></div>
-      <div class="phopt" id="fl4" data-value="Lavendel (Ketenangan)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><path d="M16 28 C16 28 4 20 4 12 C4 8 8 5 12 7 C14 8 15 9 16 11 C17 9 18 8 20 7 C24 5 28 8 28 12 C28 20 16 28 16 28Z" fill="#5FAEDB" opacity=".8"/><ellipse cx="16" cy="10" rx="2" ry="3.5" fill="#8FCBEA" opacity=".5"/></svg></div><div class="phtxt"><h4>Lavendel</h4><p>Penyembuh jiwa dan pembawa kedamaian batin.</p></div></div>
-    </div>
-    <div class="ph-jar" id="phJar">
-      <svg viewBox="0 0 100 120" class="ph-jar-svg" aria-hidden="true">
-        <path d="M20 40 Q20 20 50 20 Q80 20 80 40 L74 100 Q74 112 50 112 Q26 112 26 100 Z" fill="rgba(242,180,65,.10)" stroke="rgba(242,180,65,.45)" stroke-width="2"/>
-        <ellipse cx="50" cy="40" rx="30" ry="8" fill="rgba(242,180,65,.14)" stroke="rgba(242,180,65,.4)" stroke-width="1.5"/>
-      </svg>
-      <div class="ph-jar-slots">
-        <div class="ph-jar-slot" id="phSlotF"></div>
-        <div class="ph-jar-slot" id="phSlotA"></div>
-      </div>
-      <div class="ph-jar-label">RAMUAN JIWA</div>
-    </div>
-    <div class="phcol">
-      <h3>Hewan Jiwa</h3>
-      <div class="phopt" id="an1" data-value="Kupu-Kupu (Metamorfosis)"><div class="phico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="13" cy="16" rx="10" ry="7" fill="#E8604C" opacity=".7" transform="rotate(-20 13 16)"/><ellipse cx="27" cy="16" rx="10" ry="7" fill="#E8604C" opacity=".7" transform="rotate(20 27 16)"/><ellipse cx="14" cy="27" rx="7" ry="5" fill="#F1A094" opacity=".6" transform="rotate(20 14 27)"/><ellipse cx="26" cy="27" rx="7" ry="5" fill="#F1A094" opacity=".6" transform="rotate(-20 26 27)"/><path d="M20 12 Q21 20 20 30 Q19 20 20 12Z" fill="#5E3B21" stroke="#5E3B21" stroke-width=".5"/><path d="M20 10 Q18 7 16 8 M20 10 Q22 7 24 8" stroke="#5E3B21" stroke-width="1" stroke-linecap="round" fill="none"/></svg></div><div class="phtxt"><h4>Kupu-Kupu</h4><p>Saksi perjuangan menjadi versi terindah dirimu.</p></div></div>
-      <div class="phopt" id="an2" data-value="Cendrawasih (Keanggunan)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="18" rx="7" ry="9" fill="#7FAE6A" opacity=".8"/><circle cx="16" cy="10" r="5" fill="#E8604C" opacity=".75"/><path d="M14 10 L12 7 L15 9Z" fill="#F6CB7A"/><circle cx="18" cy="9" r="1.5" fill="#101E33"/><circle cx="18.5" cy="8.7" r=".5" fill="#FFFDF7"/><path d="M22 15 L28 12 L24 17Z" fill="#F2B441" opacity=".7"/><path d="M22 20 L27 20 L23 23Z" fill="#F6CB7A" opacity=".6"/></svg></div><div class="phtxt"><h4>Cendrawasih</h4><p>Keunikan rupa, martabat tinggi, dan pesona magis.</p></div></div>
-      <div class="phopt" id="an3" data-value="Rusa (Intuisi)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="21" rx="7" ry="8" fill="#F2B441" opacity=".7"/><ellipse cx="16" cy="12" rx="5" ry="6" fill="#F2B441" opacity=".75"/><circle cx="14" cy="11" r="1.2" fill="#101E33"/><circle cx="14.3" cy="10.7" r=".4" fill="#FFFDF7"/><path d="M11 6 L8 2 M11 6 L9 3.5" stroke="#F2B441" stroke-width="1.2" stroke-linecap="round"/><path d="M21 6 L24 2 M21 6 L23 3.5" stroke="#F2B441" stroke-width="1.2" stroke-linecap="round"/><path d="M14 14 L15 13 L17 14" stroke="#101E33" stroke-width=".8" stroke-linecap="round" fill="none"/></svg></div><div class="phtxt"><h4>Rusa Pudar</h4><p>Langkah waspada, kelembutan batin, intuisi tajam.</p></div></div>
-      <div class="phopt" id="an4" data-value="Merpati (Kedamaian)"><div class="phico"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><ellipse cx="16" cy="18" rx="5" ry="6" fill="#FFFDF7" opacity=".9"/><circle cx="16" cy="12" r="4" fill="#FFFDF7" opacity=".9"/><path d="M11 16 L2 12 L8 20Z" fill="#FFFDF7" opacity=".85"/><path d="M21 16 L30 12 L24 20Z" fill="#FFFDF7" opacity=".85"/><circle cx="14.5" cy="11.5" r="1" fill="#101E33"/><path d="M13 13 L15 14 L13 15" fill="#F6CB7A" opacity=".9"/><path d="M16 24 L15 29 L17 29Z" fill="#FFFDF7" opacity=".7"/></svg></div><div class="phtxt"><h4>Merpati Putih</h4><p>Ketulusan niat, kabar baik, kesetiaan nurani abadi.</p></div></div>
-    </div>
+  <div class="breath-stage" id="breathStage">
+    <div class="breath-circle" id="breathCircle"><span id="breathWord">TAHAN</span></div>
   </div>
-  <p class="ph-jar-hint">✦ seret bunga & hewan ke dalam toples, atau ketuk untuk memilih cepat ✦</p>
-  <button class="btn btn-bl" id="nphilo" onclick="confirmPhilo()" style="display:none;padding:12px 32px;">Kunci Esensi Jiwaku ✦</button>
+  <div class="aura-reveal" id="auraReveal" style="display:none;">
+    <div class="aura-reveal-ico" id="auraRevealIco"></div>
+    <p id="auraRevealText"></p>
+  </div>
+  <button class="btn btn-bl" id="nphilo" onclick="philoContinue()" style="display:none;padding:12px 32px;">Lanjutkan →</button>
 </div>
 
-<!-- S3 SWIPE KARTU JATI DIRI -->
+<!-- S3 — CERMIN JIWA (usap kabut, bukan pilihan benar/salah) -->
 <div class="screen" id="s3">
-  <div class="gc" style="max-width:560px;">
-    <div class="clabel">✦ Gerbang Jiwa · Siapakah Kamu?</div>
-    <h2 style="font-size:1.6rem;font-weight:400;color:var(--cream);margin-bottom:10px;">Sapu Kartu untuk Menemukan Dirimu</h2>
-    <p style="font-size:.8rem;color:rgba(255,253,247,.6);line-height:1.6;margin-bottom:16px;">Geser kartu ke kiri untuk melepaskan, ke kanan untuk menerima. Percayai mana yang terasa benar.</p>
-    <div class="swipe-stack" id="swipeStack"></div>
-    <div class="swipe-controls">
-      <button class="swipe-btn swipe-btn-no" onclick="swipeActiveCard('left')" aria-label="Lepaskan">✕</button>
-      <button class="swipe-btn swipe-btn-yes" onclick="swipeActiveCard('right')" aria-label="Terima">♥</button>
+  <div class="gc" style="max-width:520px;">
+    <div class="clabel">✦ Gerbang Jiwa · Cermin</div>
+    <h2 style="font-size:1.6rem;font-weight:400;color:var(--cream);margin-bottom:10px;">Usap Kabut di Cermin</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);line-height:1.6;margin-bottom:14px;">Gerakkan jarimu di atas cermin berkabut ini untuk menemukan kalimat yang tersembunyi di baliknya.</p>
+    <div class="mirror-wrap" id="mirrorWrap">
+      <div class="mirror-text" id="mirrorText">Aku adalah perempuan luar biasa, tangguh, mandiri, dan layak atas segala kebahagiaan yang paling indah.</div>
+      <canvas id="mirrorCanvas"></canvas>
     </div>
+    <p class="vow-hint" id="mirrorHint">Usap perlahan hingga kalimatnya terlihat penuh ✦</p>
   </div>
 </div>
 
-<!-- S3B SOROT CAHAYA TAKDIR -->
+<!-- S3B — LAMPION HARAPAN (fling & lepas, bukan grid pilihan) -->
 <div class="screen" id="s3b">
   <div class="rbg" style="margin-bottom:12px;">
-    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--rose);margin-bottom:5px;">✦ MAHKOTA TAKDIR</div>
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Sorot Cahaya Takdirmu</h2>
-    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:480px;margin:5px auto 0;line-height:1.6;">Putar sorotan cahaya lalu hentikan di saat yang terasa tepat — atau ketuk langsung gelar pilihanmu.</p>
+    <div style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:3px;color:var(--rose);margin-bottom:5px;">✦ LAMPION HARAPAN</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--cream);">Lepaskan Lampionmu</h2>
+    <p style="font-size:.8rem;color:rgba(255,253,247,.6);max-width:480px;margin:5px auto 0;line-height:1.6;" id="lanternSub">Tarik lampion ke atas dengan cepat lalu lepaskan, biarkan ia terbang membawa gelar takdirmu.</p>
   </div>
-  <div class="dgrid" id="destinyGrid">
-    <div class="dcard" id="p1" data-title="The Moonlit Gardener" onclick="pickDest(this.dataset.title,this.id)"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none"><path d="M28 20a12 12 0 1 1-12-12 9 9 0 0 0 12 12z" fill="#8FCBEA" opacity=".85"/><circle cx="26" cy="12" r="1.5" fill="#F6CB7A" opacity=".6"/><circle cx="30" cy="17" r="1" fill="#F6CB7A" opacity=".5"/></svg></div><h4>Moonlit Gardener</h4><p>Jiwa penjaga taman bulan yang merawat impian di bawah cahaya rembulan.</p></div>
-    <div class="dcard" id="p2" data-title="The Botanical Dreamer" onclick="pickDest(this.dataset.title,this.id)"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 10 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="#7FAE6A" opacity=".8"/><line x1="20" y1="34" x2="20" y2="14" stroke="#B2CEA6" stroke-width="1.5" stroke-linecap="round"/><line x1="20" y1="26" x2="14" y2="20" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round" opacity=".7"/><line x1="20" y1="22" x2="26" y2="18" stroke="#B2CEA6" stroke-width="1" stroke-linecap="round" opacity=".7"/></svg></div><h4>Botanical Dreamer</h4><p>Pribadi pemimpi yang menemukan keajaiban dalam setiap helai daun dan musim.</p></div>
-    <div class="dcard" id="p3" data-title="The Wildflower Sovereign" onclick="pickDest(this.dataset.title,this.id)"><div class="dico"><svg viewBox="0 0 40 40" width="36" height="36" fill="none"><circle cx="20" cy="20" r="7" fill="#F2B441" opacity=".9"/><g><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(45 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(90 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(135 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(180 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(225 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(270 20 20)"/><ellipse cx="20" cy="8" rx="4" ry="7" fill="#F6CB7A" opacity=".75" transform="rotate(315 20 20)"/></g><circle cx="20" cy="20" r="7" fill="#F2B441" opacity=".9"/></svg></div><h4>Wildflower Sovereign</h4><p>Perempuan berdaulat, mekar liar dan indah, tak terbendung oleh badai apapun.</p></div>
+  <div class="lantern-stage" id="lanternStage">
+    <div class="lantern" id="lanternEl">🏮</div>
   </div>
-  <div class="spotlight-controls" id="spotlightControls">
-    <button class="btn-hint spotlight-btn" id="spotlightSpinBtn" onclick="spotlightStart()">✦ Putar Sorotan Takdir</button>
-    <button class="btn-hint spotlight-btn spotlight-stop" id="spotlightStopBtn" onclick="spotlightStop()" style="display:none;">✦ Hentikan Sorotan!</button>
+  <div class="destiny-reveal" id="destinyReveal" style="display:none;">
+    <div class="dico" id="destinyIcon"></div>
+    <h4 id="destinyTitle"></h4>
+    <p id="destinyDesc"></p>
   </div>
-  <p class="destiny-synthesis" id="destinySynthesis"></p>
   <button class="btn btn-bl" id="npath" onclick="startCin()" style="display:none;padding:12px 38px;">Kenakan Mahkotaku ✦</button>
 </div>
 
@@ -719,9 +696,10 @@ float snoise(vec2 v) {
     return 130.0 * dot(m, g);
 }
 
-// Siklus 10 warna cerah & jenuh berdasarkan t (0..1) — menggantikan quad_palette_mix
-// (4 warna, agak pucat) supaya variasi warna tiap bunga jauh lebih kaya dan hidup.
-vec3 palette10_mix(vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec3 c4, vec3 c5, vec3 c6, vec3 c7, vec3 c8, vec3 c9, float t) {
+// Siklus 10 warna dari palet situs berdasarkan t (0..1) — dipakai supaya tiap
+// bunga bisa mendapat salah satu dari 10 warna indah yang berbeda-beda,
+// bukan cuma campuran 4 warna seperti sebelumnya.
+vec3 decapalette_mix(vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec3 c4, vec3 c5, vec3 c6, vec3 c7, vec3 c8, vec3 c9, float t) {
     float tt = clamp(t, 0., 1.) * 9.0;
     vec3 res = mix(c0, c1, clamp(tt - 0.0, 0., 1.));
     res = mix(res, mix(c1, c2, clamp(tt - 1.0, 0., 1.)), step(1.0, tt));
@@ -780,13 +758,24 @@ void main() {
     uv.x *= u_ratio;
     vec2 cursor = vUv - u_cursor.xy;
     cursor.x *= u_ratio;
-    // 10 warna cerah & jenuh (bukan pastel/pucat) — coral, mustard, lemon, hijau segar,
-    // toska, biru langit, periwinkle, lavender, pink mawar, oranye sunset.
-    vec3 c1=vec3(1.00,0.44,0.38), c2=vec3(1.00,0.76,0.27), c3=vec3(1.00,0.93,0.35), c4=vec3(0.55,0.85,0.42), c5=vec3(0.20,0.80,0.72);
-    vec3 c6=vec3(0.31,0.72,0.97), c7=vec3(0.56,0.56,0.98), c8=vec3(0.76,0.53,0.98), c9=vec3(0.98,0.42,0.68), c10=vec3(1.00,0.55,0.30);
-    vec3 stem_color = mix(vec3(0.32,0.68,0.34), c2, .3 * u_stop_randomizer[0]);
-    vec3 flower_color = palette10_mix(c1,c2,c3,c4,c5,c6,c7,c8,c9,c10, u_stop_randomizer[1]);
-    vec3 flower_color_back = palette10_mix(c6,c7,c8,c9,c10,c1,c2,c3,c4,c5, u_stop_randomizer[0]);
+    // 10 warna bunga berbeda, dipilih vivid & saturated (bukan varian pucat/pastel)
+    // supaya kontras dan enak dilihat, tidak jadi keputihan saat bertumpuk di shader.
+    vec3 c_coral=vec3(.94,.30,.24);   // Merah koral cerah
+    vec3 c_magenta=vec3(.90,.20,.52); // Magenta/fuchsia
+    vec3 c_gold=vec3(.98,.66,.10);    // Kuning keemasan pekat
+    vec3 c_orange=vec3(.96,.46,.08);  // Oranye cerah
+    vec3 c_grass=vec3(.32,.66,.28);   // Hijau daun pekat
+    vec3 c_teal=vec3(.10,.62,.52);    // Hijau toska/emerald
+    vec3 c_sky=vec3(.16,.56,.86);     // Biru langit pekat
+    vec3 c_indigo=vec3(.30,.34,.82);  // Biru indigo
+    vec3 c_violet=vec3(.58,.28,.85);  // Ungu violet
+    vec3 c_rose=vec3(.85,.24,.34);    // Merah mawar pekat
+    vec3 stem_color = mix(c_grass, c_gold, .3 * u_stop_randomizer[0]);
+    vec3 flower_color = decapalette_mix(c_coral, c_magenta, c_gold, c_orange, c_grass, c_teal, c_sky, c_indigo, c_violet, c_rose, u_stop_randomizer[1]);
+    // Warna belakang kelopak SENGAJA dibuat dari hue yang sama seperti warna depan
+    // (cuma digelapkan), bukan warna acak dari ujung palet lain — supaya pinggiran
+    // kelopak jadi shading natural yang menyatu, bukan warna lain yang bentrok/aneh.
+    vec3 flower_color_back = flower_color * 0.42 + vec3(.03,.02,.05);
     float angle = .5 * (u_stop_randomizer[0] - .5);
     float stem_shape = get_stem_shape(cursor, uv, .003, angle);
     stem_shape += get_stem_shape(cursor + vec2(0., .2 + .5 * u_stop_randomizer[0]), uv, .003, angle);
@@ -818,16 +807,8 @@ void main() {
     alpha = max(alpha, flower_back_shape);
     alpha = max(alpha, flower_front_shape);
     alpha *= u_clean;
-    alpha = clamp(alpha, 0., 1.);
 
-    // PENTING: jangan bagi "color" dengan alpha di sini. Tekstur hasil render ini juga
-    // dibaca ulang sebagai u_texture di frame berikutnya (buffer akumulasi jejak bunga),
-    // jadi warnanya harus tetap dalam skala "premultiplied" seperti semula supaya feedback
-    // loop-nya stabil — kalau dibagi alpha, piksel bertepi tipis (alpha kecil) meledak jadi
-    // sangat terang, lalu nilai itu ikut terekam & menumpuk tiap frame sampai semua putih.
-    // Perbaikan pinggiran hitam dilakukan di tahap render-ke-layar (lihat initWebGLFlowers
-    // di main.js: basicMaterial dipasang CustomBlending yang cocok untuk warna premultiplied).
-    gl_FragColor = vec4(color, alpha);
+    gl_FragColor = vec4(color, clamp(alpha, 0., 1.));
 }
 </script>
 <script type="x-shader/x-vertex" id="wgl-vertex-shader">
