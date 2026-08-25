@@ -1835,388 +1835,330 @@ function verify2(){const a=document.getElementById('cb').value.trim();if(a==='20
 // COUNTDOWN
 function startCD(){setBG('moon');if(cdInt)clearInterval(cdInt);cdInt=setInterval(()=>{const n=new Date(),yr=n.getFullYear()-BIRTH.getFullYear();let ann=new Date(BIRTH);ann.setFullYear(n.getFullYear());if(n<ann)ann.setFullYear(n.getFullYear()-1);const d=Math.floor((n-ann)/864e5);document.getElementById('cdy').textContent=String(yr).padStart(2,'0');document.getElementById('cdd').textContent=String(d).padStart(2,'0');document.getElementById('cdh').textContent=String(n.getHours()).padStart(2,'0');document.getElementById('cdm').textContent=String(n.getMinutes()).padStart(2,'0');document.getElementById('cds').textContent=String(n.getSeconds()).padStart(2,'0');document.getElementById('livems').textContent='TOTAL: '+(n-BIRTH).toLocaleString()+' MILIDETIK MEKAR';},1000);}
 
-// TAROT — animasi "kocok & bagikan kartu" saat masuk stage, menggantikan grid statis
-// yang langsung tampil diam. Cara kerja: tiap kartu digeser secara visual (transform,
-// tanpa mengubah alur layout flex) ke titik tengah grid dengan rotasi acak & opacity 0,
-// lalu dianimasikan mundur ke posisi aslinya satu per satu (efek kartu "dibagikan").
-let _tarotDealing=false;
-function tarotDealAnimation(){
-  const grid=document.querySelector('#str .tgrid2');
-  if(!grid||_tarotDealing)return;
-  const cards=Array.from(grid.querySelectorAll('.tcard'));
-  if(!cards.length)return;
-  _tarotDealing=true;
-  const gridRect=grid.getBoundingClientRect();
-  const cx=gridRect.width/2, cy=gridRect.height/2;
-  grid.style.pointerEvents='none';
-  cards.forEach(function(c){
-    const r=c.getBoundingClientRect();
-    const left=r.left-gridRect.left, top=r.top-gridRect.top;
-    const dx=(cx-r.width/2)-left, dy=(cy-r.height/2)-top;
-    const rot=(Math.random()*56-28).toFixed(1);
-    c.style.transition='none';
-    c.style.transform='translate('+dx+'px,'+dy+'px) rotate('+rot+'deg) scale(.82)';
-    c.style.opacity='0';
+// ===== STAGE 5 — PETA BINTANG (tap reflex, bukan grid pilihan) =====
+const STAR_FORTUNES=[
+  {name:'THE SUN', title:'Sang Mentari', desc:'Cahayamu akan menerangi setiap ruang yang kamu masuki. Kelimpahan dan kejelasan menanti.'},
+  {name:'THE STAR', title:'Bintang Petunjuk', desc:'Impian yang kamu peluk erat di malam sepi akan mulai mewujud. Kamu adalah cahaya penuntun dirimu sendiri.'},
+  {name:'THE EMPRESS', title:'Sang Ratu Bunga', desc:'Kedewasaan membawa keanggunan raga dan kematangan jiwa. Kekuasaan atas kebahagiaanmu kini milikmu.'},
+  {name:'THE MOON', title:'Rembulan Abadi', desc:'Siklus baru membawa keberuntungan. Segala lelah bertransformasi menjadi kekuatan tak terduga.'},
+  {name:'THE WORLD', title:'Dunia Hijau', desc:'Kebijaksanaan batinmu meningkat. Kamu akan dikelilingi perlindungan dan harmoni yang kokoh.'},
+  {name:'THE LOVERS', title:'Sang Kupu-Kupu', desc:'Kasih sayang tulus dan penerimaan utuh terhadap dirimu akan datang memeluk linimasamu.'}
+];
+const STAR_POS=[{x:38,y:52},{x:104,y:22},{x:184,y:34},{x:256,y:76},{x:270,y:152},{x:203,y:206},{x:118,y:214},{x:44,y:168}];
+let _starSeq=0,_starTimer=null,_starDone=false,_starTapPts=[];
+function initTarotStage(){
+  _starSeq=0;_starDone=false;_starTapPts=[];
+  if(_starTimer){clearTimeout(_starTimer);_starTimer=null;}
+  const stage=document.getElementById('starStage');
+  const reveal=document.getElementById('tarotReveal'),nbtn=document.getElementById('ntarot'),sub=document.getElementById('starSub');
+  if(reveal)reveal.style.display='none';
+  if(nbtn)nbtn.style.display='none';
+  if(sub)sub.textContent='Sentuh setiap bintang secepat mungkin saat ia mulai bersinar ✦';
+  if(!stage)return;
+  Array.from(stage.querySelectorAll('.star-dot')).forEach(function(d){d.remove();});
+  const path=document.getElementById('starPath');if(path)path.setAttribute('d','');
+  STAR_POS.forEach(function(p,i){
+    const s=document.createElement('div');
+    s.className='star-dot';
+    s.style.left=p.x+'px';s.style.top=p.y+'px';
+    s.dataset.i=String(i);
+    s.addEventListener('pointerdown',function(){starTap(s);});
+    stage.appendChild(s);
   });
-  void grid.offsetWidth; // paksa reflow supaya transisi berikutnya benar-benar terpicu
+  setTimeout(starActivateNext,700);
+}
+function starActivateNext(){
+  if(_starDone)return;
+  if(_starSeq>=STAR_POS.length){starAllDone();return;}
+  const stage=document.getElementById('starStage');
+  const dot=stage?stage.querySelector('.star-dot[data-i="'+_starSeq+'"]'):null;
+  if(!dot){_starSeq++;starActivateNext();return;}
+  dot.classList.add('active');
+  _starTimer=setTimeout(function(){
+    if(dot.classList.contains('active')){dot.classList.remove('active');dot.classList.add('missed');}
+    _starSeq++;
+    starActivateNext();
+  },1500);
+}
+function starTap(dot){
+  if(!dot.classList.contains('active'))return;
+  if(_starTimer){clearTimeout(_starTimer);_starTimer=null;}
+  dot.classList.remove('active');
+  dot.classList.add('lit');
   try{sfx('tr');}catch(e){}
-  cards.forEach(function(c,i){
-    setTimeout(function(){
-      c.style.transition='transform .68s cubic-bezier(.16,.84,.28,1.05), opacity .45s ease';
-      c.style.transform='translate(0,0) rotate(0deg) scale(1)';
-      c.style.opacity='1';
-      if(navigator.vibrate)navigator.vibrate(12);
-    },240+i*95);
-  });
-  const total=240+cards.length*95+750;
+  const idx=parseInt(dot.dataset.i,10);
+  _starTapPts.push(STAR_POS[idx]);
+  updateStarPath();
+  if(navigator.vibrate)navigator.vibrate(12);
+  _starSeq++;
+  setTimeout(starActivateNext,160);
+}
+function updateStarPath(){
+  const path=document.getElementById('starPath');
+  if(!path||!_starTapPts.length)return;
+  let d='M '+_starTapPts[0].x+' '+_starTapPts[0].y;
+  for(let i=1;i<_starTapPts.length;i++)d+=' L '+_starTapPts[i].x+' '+_starTapPts[i].y;
+  path.setAttribute('d',d);
+}
+function starAllDone(){
+  _starDone=true;
+  try{sfx('ok');}catch(e){}
+  const stage=document.getElementById('starStage');
+  if(stage){const r=stage.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,'#F2B441');}catch(e){}}
+  const pick=STAR_FORTUNES[Math.floor(Math.random()*STAR_FORTUNES.length)];
+  selTarot=pick.name+' — '+pick.title;
+  const sub=document.getElementById('starSub');if(sub)sub.textContent='Rasi bintangmu telah terbentuk ✦';
+  const trn=document.getElementById('trName');if(trn)trn.textContent=pick.name;
+  const trt=document.getElementById('trTitle');if(trt)trt.textContent=pick.title;
+  const trd=document.getElementById('trDesc');if(trd)trd.textContent=pick.desc;
+  const rev=document.getElementById('tarotReveal');if(rev)rev.style.display='flex';
+  const nbtn=document.getElementById('ntarot');if(nbtn)nbtn.style.display='inline-flex';
+  if(navigator.vibrate)navigator.vibrate([30,20,60]);
+}
+
+// ===== STAGE 6 — NAFAS TAMAN (breathing hold, bukan grid pilihan) =====
+const BREATH_FLOWERS=[
+  {icon:'🌼',value:'Kamomil (Resiliensi)',text:'tumbuh anggun di tengah badai kehidupan'},
+  {icon:'🪷',value:'Teratai (Kemurnian)',text:'melahirkan ketenangan dari air yang paling keruh'},
+  {icon:'🌸',value:'Magnolia (Martabat)',text:'menyimpan ketekunan abadi yang melampaui waktu'},
+  {icon:'💜',value:'Lavendel (Ketenangan)',text:'menjadi penyembuh jiwa dan pembawa damai batin'}
+];
+const BREATH_ANIMALS=[
+  {icon:'🦋',value:'Kupu-Kupu (Metamorfosis)',text:'menjadi saksi perjuanganmu menuju versi terindah dirimu'},
+  {icon:'🐦',value:'Cendrawasih (Keanggunan)',text:'membawa keunikan rupa dan pesona magis'},
+  {icon:'🦌',value:'Rusa (Intuisi)',text:'melangkah waspada dengan intuisi yang tajam'},
+  {icon:'🕊️',value:'Merpati (Kedamaian)',text:'membawa ketulusan niat dan kesetiaan nurani'}
+];
+const BREATH_CYCLES=3,BREATH_IN_MS=3200,BREATH_HOLD_MS=1200,BREATH_OUT_MS=3200;
+let _breathHolding=false,_breathDone=false,_breathCycle=0,_breathTimer=null;
+function initAuraStage(){
+  _breathHolding=false;_breathDone=false;_breathCycle=0;selF='';selA='';
+  if(_breathTimer){clearTimeout(_breathTimer);_breathTimer=null;}
+  const circle=document.getElementById('breathCircle');
+  if(circle){circle.style.transition='none';circle.style.transform='scale(1)';void circle.offsetWidth;circle.style.transition='';}
+  const word=document.getElementById('breathWord');if(word)word.textContent='TAHAN';
+  const sub=document.getElementById('breathSub');if(sub)sub.textContent='Tahan sentuhanmu di lingkaran, dan biarkan napasmu mengikuti gerak taman selama tiga siklus.';
+  const rev=document.getElementById('auraReveal');if(rev)rev.style.display='none';
+  const nbtn=document.getElementById('nphilo');if(nbtn)nbtn.style.display='none';
+}
+function breathStart(e){
+  if(_breathDone||_breathHolding)return;
+  e.preventDefault();
+  _breathHolding=true;_breathCycle=0;
+  if(navigator.vibrate)navigator.vibrate(15);
+  breathRunCycle();
+}
+function breathRunCycle(){
+  if(!_breathHolding)return;
+  const circle=document.getElementById('breathCircle'),word=document.getElementById('breathWord');
+  if(circle){circle.style.transition='transform '+(BREATH_IN_MS/1000)+'s ease-in-out';circle.style.transform='scale(1.55)';}
+  if(word)word.textContent='TARIK NAPAS';
+  _breathTimer=setTimeout(function(){
+    if(!_breathHolding)return;
+    if(word)word.textContent='TAHAN';
+    _breathTimer=setTimeout(function(){
+      if(!_breathHolding)return;
+      if(circle){circle.style.transition='transform '+(BREATH_OUT_MS/1000)+'s ease-in-out';circle.style.transform='scale(1)';}
+      if(word)word.textContent='HEMBUSKAN';
+      _breathTimer=setTimeout(function(){
+        if(!_breathHolding)return;
+        _breathCycle++;
+        if(_breathCycle>=BREATH_CYCLES){breathComplete();}
+        else{breathRunCycle();}
+      },BREATH_OUT_MS);
+    },BREATH_HOLD_MS);
+  },BREATH_IN_MS);
+}
+function breathRelease(){
+  if(_breathDone||!_breathHolding)return;
+  _breathHolding=false;
+  if(_breathTimer){clearTimeout(_breathTimer);_breathTimer=null;}
+  const circle=document.getElementById('breathCircle');if(circle){circle.style.transition='transform .5s ease';circle.style.transform='scale(1)';}
+  const word=document.getElementById('breathWord');if(word)word.textContent='TAHAN';
+  const sub=document.getElementById('breathSub');if(sub)sub.textContent='Terlepas — sentuh & tahan lagi tanpa dilepas untuk mengulang napas ✦';
+}
+function breathComplete(){
+  _breathDone=true;_breathHolding=false;
+  const word=document.getElementById('breathWord');if(word)word.textContent='✦';
+  try{sfx('ok');}catch(e){}
+  const stage=document.getElementById('breathStage');
+  const fl=BREATH_FLOWERS[Math.floor(Math.random()*BREATH_FLOWERS.length)];
+  const an=BREATH_ANIMALS[Math.floor(Math.random()*BREATH_ANIMALS.length)];
+  selF=fl.value;selA=an.value;
+  if(stage){const r=stage.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,'#7FAE6A');}catch(e){}}
+  const sub=document.getElementById('breathSub');if(sub)sub.textContent='Taman telah menitipkan esensi jiwa untukmu ✦';
+  const ico=document.getElementById('auraRevealIco');if(ico)ico.textContent=fl.icon+' '+an.icon;
+  const txt=document.getElementById('auraRevealText');
+  if(txt)txt.textContent='Jiwamu '+fl.text+', seperti '+fl.value.split(' (')[0]+'. Dan '+an.text+', seperti '+an.value.split(' (')[0]+'.';
+  const rev=document.getElementById('auraReveal');if(rev)rev.style.display='flex';
+  const nbtn=document.getElementById('nphilo');if(nbtn)nbtn.style.display='inline-flex';
+  if(navigator.vibrate)navigator.vibrate([40,20,40,20,120]);
+}
+function philoContinue(){
+  document.getElementById('cflval').textContent='Esensi Bunga: '+selF;
+  document.getElementById('canval').textContent='Esensi Hewan: '+selA;
+  go('sph','s3');
+  setTimeout(initVowStage,650);
+}
+document.addEventListener('DOMContentLoaded',function(){
+  const c=document.getElementById('breathCircle');
+  if(!c)return;
+  c.addEventListener('pointerdown',breathStart);
+  c.addEventListener('pointerup',breathRelease);
+  c.addEventListener('pointerleave',breathRelease);
+  c.addEventListener('pointercancel',breathRelease);
+});
+
+// ===== STAGE 7 — CERMIN JIWA (usap kabut/scratch-reveal, bukan pilihan benar/salah) =====
+let _mirrorDone=false,_mirrorGrid=null,_mirrorCols=0,_mirrorRows=0,_mirrorWiped=0,_mirrorTotal=0,_mirrorDrawing=false;
+function initVowStage(){
+  _mirrorDone=false;_mirrorDrawing=false;_mirrorWiped=0;
+  const canvas=document.getElementById('mirrorCanvas');
+  const hint=document.getElementById('mirrorHint');if(hint)hint.textContent='Usap perlahan hingga kalimatnya terlihat penuh ✦';
+  if(!canvas)return;
+  canvas.style.transition='none';canvas.style.opacity='1';canvas.style.pointerEvents='auto';
+  const wrap=canvas.parentElement;
+  const w=wrap.clientWidth||400,h=wrap.clientHeight||200;
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  ctx.globalCompositeOperation='source-over';
+  ctx.clearRect(0,0,w,h);
+  const grad=ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,'rgba(18,30,48,.97)');grad.addColorStop(1,'rgba(26,40,62,.95)');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,w,h);
+  _mirrorCols=14;_mirrorRows=8;
+  _mirrorGrid=new Array(_mirrorCols*_mirrorRows).fill(false);
+  _mirrorTotal=_mirrorCols*_mirrorRows;
+  canvas.onpointerdown=function(e){_mirrorDrawing=true;mirrorWipeAt(e);};
+  canvas.onpointermove=function(e){if(_mirrorDrawing)mirrorWipeAt(e);};
+  canvas.onpointerup=function(){_mirrorDrawing=false;};
+  canvas.onpointerleave=function(){_mirrorDrawing=false;};
+}
+function mirrorWipeAt(e){
+  if(_mirrorDone)return;
+  const canvas=document.getElementById('mirrorCanvas');
+  const r=canvas.getBoundingClientRect();
+  const x=(e.clientX-r.left)*(canvas.width/r.width),y=(e.clientY-r.top)*(canvas.height/r.height);
+  const ctx=canvas.getContext('2d');
+  ctx.save();
+  ctx.globalCompositeOperation='destination-out';
+  ctx.beginPath();
+  ctx.arc(x,y,30,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+  try{sfx('tr');}catch(e2){}
+  const cellW=canvas.width/_mirrorCols,cellH=canvas.height/_mirrorRows;
+  const cx=Math.floor(x/cellW),cy=Math.floor(y/cellH);
+  for(let dx=-1;dx<=1;dx++){
+    for(let dy=-1;dy<=1;dy++){
+      const gx=cx+dx,gy=cy+dy;
+      if(gx<0||gy<0||gx>=_mirrorCols||gy>=_mirrorRows)continue;
+      const idx=gy*_mirrorCols+gx;
+      if(!_mirrorGrid[idx]){_mirrorGrid[idx]=true;_mirrorWiped++;}
+    }
+  }
+  if(_mirrorWiped/_mirrorTotal>=0.55)mirrorComplete();
+}
+function mirrorComplete(){
+  if(_mirrorDone)return;
+  _mirrorDone=true;
+  const canvas=document.getElementById('mirrorCanvas');
+  if(canvas){canvas.style.transition='opacity .8s ease';canvas.style.opacity='0';canvas.style.pointerEvents='none';}
+  try{sfx('ok');}catch(e){}
+  if(canvas){const r=canvas.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,'#7FAE6A');}catch(e){}}
+  const hint=document.getElementById('mirrorHint');if(hint)hint.textContent='Ikrar terucap. Jiwa taman ini mendengarmu ✦';
+  if(navigator.vibrate)navigator.vibrate([40,20,40,20,120]);
+  setTimeout(function(){go('s3','s3b');setTimeout(initWheelStage,650);},1700);
+}
+
+// ===== STAGE 8 — LAMPION HARAPAN (fling/lepas, bukan grid pilihan) =====
+const DESTINY_DATA=[
+  {title:'The Moonlit Gardener',desc:'Jiwa penjaga taman bulan yang merawat impian di bawah cahaya rembulan.',icon:'🌙',color:'#5FAEDB'},
+  {title:'The Botanical Dreamer',desc:'Pribadi pemimpi yang menemukan keajaiban dalam setiap helai daun dan musim.',icon:'🌿',color:'#7FAE6A'},
+  {title:'The Wildflower Sovereign',desc:'Perempuan berdaulat, mekar liar dan indah, tak terbendung oleh badai apapun.',icon:'🌼',color:'#F2B441'}
+];
+let _lanternDragging=false,_lanternDone=false,_lanternStartY=0,_lanternLastY=0,_lanternLastT=0,_lanternVel=0;
+function initWheelStage(){
+  _lanternDragging=false;_lanternDone=false;_lanternVel=0;
+  const el=document.getElementById('lanternEl');
+  if(el){
+    el.style.transition='none';
+    el.style.transform='translate(0px,0px) rotate(0deg)';
+    el.style.opacity='1';
+    void el.offsetWidth;
+    el.style.transition='';
+  }
+  const sub=document.getElementById('lanternSub');if(sub)sub.textContent='Tarik lampion ke atas dengan cepat lalu lepaskan, biarkan ia terbang membawa gelar takdirmu.';
+  const rev=document.getElementById('destinyReveal');if(rev)rev.style.display='none';
+  const np=document.getElementById('npath');if(np)np.style.display='none';
+}
+function lanternStart(e){
+  if(_lanternDone)return;
+  e.preventDefault();
+  _lanternDragging=true;
+  _lanternStartY=e.clientY;_lanternLastY=e.clientY;_lanternLastT=performance.now();_lanternVel=0;
+  const el=e.currentTarget;
+  try{el.setPointerCapture(e.pointerId);}catch(err){}
+  el.style.transition='none';
+}
+function lanternMove(e){
+  if(!_lanternDragging)return;
+  const el=document.getElementById('lanternEl');
+  const dy=e.clientY-_lanternStartY;
+  const clamped=Math.max(-260,Math.min(60,dy));
+  el.style.transform='translate('+(clamped*0.08)+'px,'+clamped+'px) rotate('+(clamped*0.03)+'deg)';
+  const now=performance.now();
+  const dt=now-_lanternLastT;
+  if(dt>0)_lanternVel=(e.clientY-_lanternLastY)/dt;
+  _lanternLastY=e.clientY;_lanternLastT=now;
+}
+function lanternEnd(){
+  if(!_lanternDragging)return;
+  _lanternDragging=false;
+  const el=document.getElementById('lanternEl');
+  const totalDy=_lanternLastY-_lanternStartY;
+  const flungHard=_lanternVel<-0.55||totalDy<-130;
+  if(flungHard&&!_lanternDone){
+    lanternRelease(el);
+  }else{
+    el.style.transition='transform .5s cubic-bezier(.34,1.56,.64,1)';
+    el.style.transform='translate(0px,0px) rotate(0deg)';
+    const sub=document.getElementById('lanternSub');if(sub)sub.textContent='Belum terbang — angkat lebih cepat lalu lepaskan ✦';
+  }
+}
+function lanternRelease(el){
+  _lanternDone=true;
+  try{sfx('ok');}catch(e){}
+  if(navigator.vibrate)navigator.vibrate([30,20,80]);
+  el.style.transition='transform 2.1s cubic-bezier(.22,.7,.3,1), opacity 2.1s ease';
+  el.style.transform='translate('+((Math.random()-.5)*80)+'px,-620px) rotate('+((Math.random()-.5)*20)+'deg)';
+  el.style.opacity='0';
+  const targetIndex=Math.floor(Math.random()*DESTINY_DATA.length);
+  const d=DESTINY_DATA[targetIndex];
+  selD=d.title;
   setTimeout(function(){
-    cards.forEach(function(c){ c.style.transition=''; c.style.transform=''; c.style.opacity=''; });
-    grid.style.pointerEvents='';
-    _tarotDealing=false;
-  },total);
+    const di=document.getElementById('destinyIcon');if(di)di.textContent=d.icon;
+    const dt=document.getElementById('destinyTitle');if(dt)dt.textContent=d.title;
+    const dd=document.getElementById('destinyDesc');if(dd)dd.textContent=d.desc;
+    const rev=document.getElementById('destinyReveal');if(rev)rev.style.display='flex';
+    const cdt=document.getElementById('cdyntitle');if(cdt)cdt.textContent='[ '+d.title+' ]';
+    const db=document.getElementById('dynbadge');if(db)db.textContent=d.title;
+    const stage=document.getElementById('lanternStage');
+    if(stage){const r=stage.getBoundingClientRect();try{bloom(r.left+r.width/2,r.top+r.height/2,d.color);}catch(e){}}
+    try{sfx('ok');}catch(e){}
+    const np=document.getElementById('npath');if(np)np.style.display='inline-flex';
+    const sub=document.getElementById('lanternSub');if(sub)sub.textContent='Lampionmu telah terbang membawa gelar takdirmu ✦';
+  },1900);
 }
-function flipTarot(el){if(el.classList.contains('flipped'))return;if(document.querySelector('.tcard.flipped'))return;sfx('ok');el.classList.add('flipped');const r=el.getBoundingClientRect();bloom(r.left+r.width/2,r.top+r.height/2,'#F2B441');document.getElementById('ntarot').style.display='inline-flex';const shb=document.getElementById('strHintBtn');if(shb)shb.style.display='none';const shx=document.getElementById('strHintBox');if(shx)shx.style.display='none';const tfn=el.querySelector('.tfname'),th4=el.querySelector('h4');if(tfn&&th4)selTarot=tfn.textContent.trim()+' — '+th4.textContent.trim();document.querySelectorAll('.tcard').forEach(c=>{if(c!==el){c.style.opacity='.35';c.style.filter='grayscale(.6)';c.style.pointerEvents='none';c.style.transition='opacity .5s ease, filter .5s ease';}});}
-function strShowHint(){const msgs=['Sentuh salah satu dari 6 kartu di atas untuk membaliknya!','Pilih kartu manapun — ikuti intuisimu. Tidak ada jawaban yang salah.','Sentuh kartu yang paling menarik perhatianmu saat ini.'];const hb=document.getElementById('strHintBox');if(hb){hb.textContent=msgs[Math.floor(Math.random()*msgs.length)];hb.style.display='block';}setTimeout(function(){if(hb)hb.style.display='none';},3000);}
-
-// STAGE 6 — RACIK RAMUAN JIWA: drag & drop esensi bunga/hewan ke dalam toples.
-// Ketuk cepat = "quick pick" (item terbang otomatis masuk toples), seret manual = drag
-// & drop fisik. Keduanya berakhir di fungsi yang sama (phSelectItem).
-let _phDrag=null;
-function phInitDragDrop(){
-  document.querySelectorAll('#sph .phopt').forEach(function(opt){
-    if(opt._phBound) return; // hindari bind ganda tiap kali stage dibuka ulang
-    opt._phBound=true;
-    opt.addEventListener('pointerdown', phOnPointerDown);
-  });
-}
-function phOnPointerDown(e){
-  if(_phDrag) return;
-  const opt=e.currentTarget;
-  e.preventDefault();
-  const rect=opt.getBoundingClientRect();
-  const iconEl=opt.querySelector('.phico');
-  const nameEl=opt.querySelector('.phtxt h4');
-  const ghost=document.createElement('div');
-  ghost.className='ph-drag-ghost';
-  ghost.innerHTML='<div class="phico">'+(iconEl?iconEl.innerHTML:'')+'</div><div class="ph-drag-name">'+(nameEl?nameEl.textContent:'')+'</div>';
-  ghost.style.left=rect.left+'px';
-  ghost.style.top=rect.top+'px';
-  ghost.style.width=rect.width+'px';
-  document.body.appendChild(ghost);
-  requestAnimationFrame(function(){ ghost.classList.add('active'); });
-  opt.style.opacity='.32';
-  opt.style.pointerEvents='none';
-  _phDrag={ghost:ghost, opt:opt, startLeft:rect.left, startTop:rect.top, offX:e.clientX-rect.left, offY:e.clientY-rect.top, moved:false};
-  window.addEventListener('pointermove', phOnPointerMove);
-  window.addEventListener('pointerup', phOnPointerUp);
-  window.addEventListener('pointercancel', phOnPointerUp);
-}
-function phOnPointerMove(e){
-  if(!_phDrag) return;
-  e.preventDefault();
-  const d=_phDrag;
-  const nx=e.clientX-d.offX, ny=e.clientY-d.offY;
-  if(Math.abs(nx-d.startLeft)>4||Math.abs(ny-d.startTop)>4) d.moved=true;
-  d.ghost.style.transform='translate('+(nx-d.startLeft)+'px,'+(ny-d.startTop)+'px) scale(1.05) rotate(-3deg)';
-  const jar=document.getElementById('phJar');
-  if(jar){
-    const jr=jar.getBoundingClientRect();
-    const over=e.clientX>jr.left-24&&e.clientX<jr.right+24&&e.clientY>jr.top-24&&e.clientY<jr.bottom+24;
-    jar.classList.toggle('ph-jar-hover', over);
-  }
-}
-function phOnPointerUp(e){
-  if(!_phDrag) return;
-  window.removeEventListener('pointermove', phOnPointerMove);
-  window.removeEventListener('pointerup', phOnPointerUp);
-  window.removeEventListener('pointercancel', phOnPointerUp);
-  const d=_phDrag; _phDrag=null;
-  const jar=document.getElementById('phJar');
-  if(jar) jar.classList.remove('ph-jar-hover');
-  const jr=jar?jar.getBoundingClientRect():null;
-  const droppedOnJar = jr && e.clientX>jr.left-30&&e.clientX<jr.right+30&&e.clientY>jr.top-30&&e.clientY<jr.bottom+30;
-  const opt=d.opt;
-  const type=opt.id.indexOf('fl')===0 ? 'f' : 'a';
-  const value=opt.getAttribute('data-value')||'';
-  if(!d.moved || droppedOnJar){
-    // tap ringan tanpa gerak (quick pick) ATAU berhasil dilepas tepat di atas toples
-    phFlyIntoJar(d.ghost, jr, function(){ d.ghost.remove(); opt.style.opacity=''; opt.style.pointerEvents=''; });
-    phSelectItem(type, value, opt.id, opt);
-  } else {
-    d.ghost.style.transition='transform .45s cubic-bezier(.34,1.4,.4,1)';
-    d.ghost.style.transform='translate(0,0) scale(1) rotate(0deg)';
-    setTimeout(function(){ d.ghost.remove(); opt.style.opacity=''; opt.style.pointerEvents=''; },460);
-  }
-}
-function phFlyIntoJar(ghost, jarRect, cb){
-  if(!jarRect){ cb&&cb(); return; }
-  const gr=ghost.getBoundingClientRect();
-  const targetX=(jarRect.left+jarRect.width/2)-gr.width/2;
-  const targetY=(jarRect.top+jarRect.height/2)-gr.height/2;
-  const curLeft=parseFloat(ghost.style.left)||gr.left, curTop=parseFloat(ghost.style.top)||gr.top;
-  ghost.style.transition='transform .4s cubic-bezier(.3,.6,.2,1), opacity .4s ease .15s';
-  ghost.style.transform='translate('+(targetX-curLeft)+'px,'+(targetY-curTop)+'px) scale(.25) rotate(12deg)';
-  ghost.style.opacity='0';
-  setTimeout(cb, 420);
-}
-function phSelectItem(t, v, id, srcEl){
-  sfx('tr');
-  const icon=srcEl?srcEl.querySelector('.phico'):null;
-  if(t==='f'){
-    selF=v;
-    ['fl1','fl2','fl3','fl4'].forEach(function(i){ const e=document.getElementById(i); if(e) e.classList.remove('selected'); });
-    document.getElementById(id).classList.add('selected');
-    const slot=document.getElementById('phSlotF');
-    if(slot){ slot.innerHTML=icon?icon.innerHTML:''; slot.classList.add('filled'); }
-  } else {
-    selA=v;
-    ['an1','an2','an3','an4'].forEach(function(i){ const e=document.getElementById(i); if(e) e.classList.remove('selected'); });
-    document.getElementById(id).classList.add('selected');
-    const slot=document.getElementById('phSlotA');
-    if(slot){ slot.innerHTML=icon?icon.innerHTML:''; slot.classList.add('filled'); }
-  }
-  const jar=document.getElementById('phJar');
-  if(selF&&selA){
-    document.getElementById('nphilo').style.display='inline-flex';
-    if(jar){
-      jar.classList.add('ph-jar-ready');
-      const r=jar.getBoundingClientRect();
-      bloom(r.left+r.width/2, r.top+r.height/2, '#F2B441');
-    }
-  }
-}
-document.addEventListener('DOMContentLoaded', phInitDragDrop);
-function confirmPhilo(){sfx('ok');document.getElementById('cflval').textContent='Esensi Bunga: '+selF;document.getElementById('canval').textContent='Esensi Hewan: '+selA;go('sph','s3');}
-
-// STAGE 7 — SAPU KARTU JATI DIRI: swipe ala Tinder menggantikan tombol pilihan.
-// Geser kiri = lepaskan, geser kanan = terima. Menolak keyakinan salah / menerima
-// jati diri sejati = aksi benar (kartu terbang pergi/lanjut); sebaliknya = shake+error.
-const SWIPE_CARDS_TEMPLATE = ''
-  +'<div class="swipe-card" data-correct="0"><div class="swipe-card-txt">Aku memilih berjalan dalam keraguan dan ketakutan yang terus menghantui</div><div class="swipe-tag swipe-tag-l">LEPASKAN</div><div class="swipe-tag swipe-tag-r">TERIMA</div></div>'
-  +'<div class="swipe-card" data-correct="0"><div class="swipe-card-txt">Aku memilih menetap di tempat yang nyaman dan tidak pernah bertumbuh</div><div class="swipe-tag swipe-tag-l">LEPASKAN</div><div class="swipe-tag swipe-tag-r">TERIMA</div></div>'
-  +'<div class="swipe-card" data-correct="1"><div class="swipe-card-txt">Aku adalah perempuan luar biasa, tangguh, mandiri, dan layak atas segala kebahagiaan yang paling indah</div><div class="swipe-tag swipe-tag-l">LEPASKAN</div><div class="swipe-tag swipe-tag-r">TERIMA</div></div>';
-let _swipeDrag=null;
-function s3ResetSwipeStack(){
-  const stack=document.getElementById('swipeStack');
-  if(!stack) return;
-  stack.innerHTML=SWIPE_CARDS_TEMPLATE;
-  const cards=Array.from(stack.children);
-  for(let i=cards.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=cards[i]; cards[i]=cards[j]; cards[j]=t; }
-  cards.forEach(function(c){ stack.appendChild(c); });
-  s3InitSwipe();
-}
-function s3InitSwipe(){
-  const stack=document.getElementById('swipeStack');
-  if(!stack) return;
-  stack.querySelectorAll('.swipe-card').forEach(function(card){
-    if(card._swBound) return;
-    card._swBound=true;
-    card.addEventListener('pointerdown', s3OnPointerDown);
-  });
-}
-function s3ActiveCard(){
-  const stack=document.getElementById('swipeStack');
-  if(!stack) return null;
-  return stack.querySelector('.swipe-card');
-}
-function s3OnPointerDown(e){
-  if(_swipeDrag) return;
-  const card=e.currentTarget;
-  if(card!==s3ActiveCard()) return;
-  card.setPointerCapture(e.pointerId);
-  card.classList.add('dragging');
-  _swipeDrag={card:card, startX:e.clientX, startY:e.clientY, dx:0};
-  card.addEventListener('pointermove', s3OnPointerMove);
-  card.addEventListener('pointerup', s3OnPointerUp);
-  card.addEventListener('pointercancel', s3OnPointerUp);
-}
-function s3OnPointerMove(e){
-  if(!_swipeDrag) return;
-  const d=_swipeDrag;
-  d.dx=e.clientX-d.startX;
-  const dy=(e.clientY-d.startY)*0.4;
-  const rot=d.dx*0.06;
-  d.card.style.transform='translate('+d.dx+'px,'+dy+'px) rotate('+rot+'deg)';
-  const tagL=d.card.querySelector('.swipe-tag-l'), tagR=d.card.querySelector('.swipe-tag-r');
-  const t=Math.min(1, Math.abs(d.dx)/90);
-  if(tagL) tagL.style.opacity = d.dx<0 ? t : 0;
-  if(tagR) tagR.style.opacity = d.dx>0 ? t : 0;
-}
-function s3OnPointerUp(){
-  if(!_swipeDrag) return;
-  const d=_swipeDrag; _swipeDrag=null;
-  d.card.classList.remove('dragging');
-  d.card.removeEventListener('pointermove', s3OnPointerMove);
-  d.card.removeEventListener('pointerup', s3OnPointerUp);
-  d.card.removeEventListener('pointercancel', s3OnPointerUp);
-  const THRESH=85;
-  if(d.dx>THRESH) s3ResolveSwipe(d.card,'right');
-  else if(d.dx<-THRESH) s3ResolveSwipe(d.card,'left');
-  else {
-    d.card.style.transition='transform .35s cubic-bezier(.3,.7,.3,1.1)';
-    d.card.style.transform='translate(0,0) rotate(0deg)';
-    const tagL=d.card.querySelector('.swipe-tag-l'), tagR=d.card.querySelector('.swipe-tag-r');
-    if(tagL) tagL.style.opacity=0;
-    if(tagR) tagR.style.opacity=0;
-    setTimeout(function(){ d.card.style.transition=''; },360);
-  }
-}
-function swipeActiveCard(dir){
-  const card=s3ActiveCard();
-  if(card) s3ResolveSwipe(card, dir);
-}
-function s3ResolveSwipe(card, dir){
-  const isCorrectStatement = card.getAttribute('data-correct')==='1';
-  const rightAction = (dir==='left' && !isCorrectStatement) || (dir==='right' && isCorrectStatement);
-  const tagL=card.querySelector('.swipe-tag-l'), tagR=card.querySelector('.swipe-tag-r');
-  if(rightAction){
-    sfx('ok');
-    if(navigator.vibrate) navigator.vibrate(dir==='right'?[40,30,90]:30);
-    card.style.transition='transform .55s cubic-bezier(.2,.7,.3,1), opacity .5s ease';
-    const flyX = dir==='right' ? window.innerWidth : -window.innerWidth;
-    card.style.transform='translate('+flyX+'px,-40px) rotate('+(dir==='right'?28:-28)+'deg)';
-    card.style.opacity='0';
-    if(tagL) tagL.style.opacity = dir==='left'?1:0;
-    if(tagR) tagR.style.opacity = dir==='right'?1:0;
-    if(isCorrectStatement){
-      const r=card.getBoundingClientRect();
-      bloom(r.left+r.width/2, r.top+r.height/2, '#7FAE6A');
-      gateOpenFX();
-      setTimeout(function(){ card.remove(); },560);
-      setTimeout(()=>go('s3','s3b'),1450);
-    } else {
-      setTimeout(function(){ card.remove(); },560);
-    }
-  } else {
-    sfx('err');
-    if(navigator.vibrate) navigator.vibrate([30,20,30]);
-    card.style.transition='transform .4s cubic-bezier(.36,.07,.19,.97)';
-    card.style.transform='translate(0,0) rotate(0deg)';
-    card.classList.add('snap-error');
-    setTimeout(function(){ card.classList.remove('snap-error'); card.style.transition=''; },520);
-    if(tagL) tagL.style.opacity=0;
-    if(tagR) tagR.style.opacity=0;
-    const msg = isCorrectStatement
-      ? 'Jangan lepaskan dirimu yang sesungguhnya — sapu ke KANAN untuk menerimanya 🌸'
-      : 'Taman ini mendeteksi kekuatanmu jauh melampaui ini — sapu ke KIRI untuk melepaskannya 🌸';
-    showAlert(msg);
-  }
-}
-document.addEventListener('DOMContentLoaded', s3ResetSwipeStack);
-
-// Kilau cahaya penuh layar — dipakai saat identitas sejati diterima (stage 7)
-// maupun saat gelar takdir terkunci (stage 8)
-function gateOpenFX(){
-  const ov=document.createElement('div');
-  ov.className='gate-open-fx';
-  ov.innerHTML='<div class="gate-open-txt">✦ GERBANG TERBUKA ✦</div>';
-  document.body.appendChild(ov);
-  requestAnimationFrame(function(){ requestAnimationFrame(function(){ ov.classList.add('show'); }); });
-  setTimeout(function(){ ov.classList.remove('show'); },1050);
-  setTimeout(function(){ ov.remove(); },1650);
-}
-
-// RANGKUMAN PERJALANAN — merangkai pilihan tarot + esensi bunga/hewan jadi satu
-// kalimat begitu gelar takdir dipilih, supaya pilihan-pilihan sebelumnya (str/sph)
-// terasa berbuah, bukan sekadar checklist yang lewat begitu saja.
-function _synthExtractName(str){ if(!str) return ''; const i=str.indexOf(' ('); return i>-1 ? str.substring(0,i).trim() : str.trim(); }
-function _synthExtractTrait(str){ if(!str) return ''; const m=str.match(/\(([^)]+)\)/); return m ? m[1].trim() : ''; }
-function buildJourneySynthesis(){
-  const flowerName=_synthExtractName(selF)||'bunga jiwa';
-  const flowerTrait=_synthExtractTrait(selF);
-  const animalName=_synthExtractName(selA)||'hewan jiwa';
-  const animalTrait=_synthExtractTrait(selA);
-  let tarotName='rembulan';
-  if(selTarot){ const parts=selTarot.split('—'); tarotName=(parts[1]||parts[0]||tarotName).trim(); }
-  const destinyName=selD||'The Wildflower Sovereign';
-  return 'Di bawah naungan <em>'+tarotName+'</em>, jiwamu bersemayam dalam '
-    +(flowerTrait?'kelembutan '+flowerTrait.toLowerCase()+' seperti ':'kelembutan ')+'<em>'+flowerName+'</em>'
-    +' dan '+(animalTrait?animalTrait.toLowerCase()+' seorang ':'semangat ')+'<em>'+animalName+'</em>'
-    +'. Maka resmi kau menyandang gelar <strong>'+destinyName+'</strong> — perjalanan menuju dekade keduamu dimulai dari sini ✦';
-}
-function pickDest(t,id){
-  sfx('ok');selD=t;
-  document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected'));
-  document.getElementById(id).classList.add('selected');
-  document.getElementById('npath').style.display='inline-flex';
-  document.getElementById('cdyntitle').textContent='[ '+t+' ]';
-  document.getElementById('dynbadge').textContent=t;
-  const syn=document.getElementById('destinySynthesis');
-  if(syn){
-    syn.classList.remove('show');
-    syn.innerHTML=buildJourneySynthesis();
-    void syn.offsetWidth;
-    setTimeout(function(){ syn.classList.add('show'); },260);
-  }
-}
-
-// STAGE 8 — SOROT CAHAYA BERPUTAR: roulette sorotan menggantikan klik kartu langsung.
-// "Putar" mulai siklus cepat berpindah antar 3 kartu; "Hentikan" memicu deselerasi
-// menuju hasil acak lalu mengunci pilihan (memanggil pickDest yang sama seperti klik
-// langsung, jadi klik kartu manapun tetap berfungsi sebagai pilihan cepat/manual).
-let _spotlightInt=null, _spotlightIdx=0, _spotlightBusy=false;
-function spotlightSetActive(idx){
-  document.querySelectorAll('#destinyGrid .dcard').forEach(function(c,i){ c.classList.toggle('spotlight-active', i===idx); });
-}
-function spotlightStart(){
-  if(_spotlightBusy) return;
-  _spotlightBusy=true;
-  sfx('tr');
-  const grid=document.getElementById('destinyGrid');
-  if(grid) grid.style.pointerEvents='none';
-  const spinBtn=document.getElementById('spotlightSpinBtn'), stopBtn=document.getElementById('spotlightStopBtn');
-  if(spinBtn) spinBtn.style.display='none';
-  if(stopBtn) stopBtn.style.display='inline-flex';
-  _spotlightIdx=0;
-  spotlightSetActive(_spotlightIdx);
-  if(_spotlightInt) clearInterval(_spotlightInt);
-  _spotlightInt=setInterval(function(){
-    _spotlightIdx=(_spotlightIdx+1)%3;
-    spotlightSetActive(_spotlightIdx);
-    if(navigator.vibrate) navigator.vibrate(8);
-  },110);
-}
-function spotlightStop(){
-  if(!_spotlightInt) return;
-  clearInterval(_spotlightInt);
-  _spotlightInt=null;
-  const stopBtn=document.getElementById('spotlightStopBtn');
-  if(stopBtn) stopBtn.style.display='none';
-  const target=Math.floor(Math.random()*3);
-  const delays=[90,120,150,190,240,300,380];
-  let cur=_spotlightIdx;
-  const steps=[];
-  for(let i=0;i<delays.length;i++){ cur=(cur+1)%3; steps.push(cur); }
-  while(steps[steps.length-1]!==target){ cur=(cur+1)%3; steps.push(cur); delays.push(420); }
-  let acc=0;
-  steps.forEach(function(idx,i){
-    acc+=delays[i]||420;
-    setTimeout(function(){
-      spotlightSetActive(idx);
-      try{sfx('tr');}catch(e){}
-      if(navigator.vibrate) navigator.vibrate(10);
-      if(i===steps.length-1) setTimeout(function(){ spotlightLockIn(idx); },260);
-    },acc);
-  });
-}
-function spotlightLockIn(idx){
-  const cards=document.querySelectorAll('#destinyGrid .dcard');
-  cards.forEach(function(c){ c.classList.remove('spotlight-active'); });
-  const card=cards[idx];
-  if(!card){ _spotlightBusy=false; return; }
-  card.classList.add('spotlight-locked');
-  setTimeout(function(){ card.classList.remove('spotlight-locked'); },900);
-  sfx('win');
-  if(navigator.vibrate) navigator.vibrate([50,30,90]);
-  const r=card.getBoundingClientRect();
-  bloom(r.left+r.width/2, r.top+r.height/2, '#F2B441');
-  pickDest(card.dataset.title, card.id);
-  const grid=document.getElementById('destinyGrid');
-  if(grid) grid.style.pointerEvents='';
-  const spinBtn=document.getElementById('spotlightSpinBtn');
-  if(spinBtn){ spinBtn.style.display='inline-flex'; spinBtn.textContent='✦ Putar Ulang Sorotan'; }
-  _spotlightBusy=false;
-}
+document.addEventListener('DOMContentLoaded',function(){
+  const el=document.getElementById('lanternEl');
+  if(!el)return;
+  el.addEventListener('pointerdown',lanternStart);
+  el.addEventListener('pointermove',lanternMove);
+  el.addEventListener('pointerup',lanternEnd);
+  el.addEventListener('pointercancel',lanternEnd);
+});
 
 // CINEMATIC
 const PTXTS=["Dua puluh tahun bukanlah sekadar angka —\nitu adalah ribuan pagi yang kamu pilih untuk bangkit.","Setiap versi dirimu yang pernah ada\ntelah membawa kamu ke titik yang tepat ini.","Dan kamu, Naffa,\nadalah karya paling nyata yang pernah semesta ciptakan."];
@@ -2378,24 +2320,7 @@ function initWebGLFlowers(){
         vertexShader:document.getElementById('wgl-vertex-shader').textContent,
         fragmentShader:document.getElementById('wgl-fragment-shader').textContent
       });
-      // basicMaterial ini hanya dipakai di tahap TERAKHIR — menampilkan hasil render
-      // (renderTargets) ke layar/canvas asli. Isi tekstur dari shaderMaterial di atas
-      // bersifat "premultiplied" (warna sudah dikalikan cakupan/alpha-nya, karena teksturnya
-      // juga dipakai ulang sebagai buffer akumulasi jejak bunga tiap frame — lihat komentar
-      // di wgl-fragment-shader). Makanya di sini dipasang CustomBlending dengan faktor sumber
-      // ONE (bukan SRC_ALPHA bawaan) supaya tidak "digandakan" peredupannya saat dicampur ke
-      // latar belakang — ini yang memperbaiki tepian bunga yang tadinya terlihat kehitaman,
-      // tanpa mengubah/mengganggu perhitungan warna di dalam shader (yang sensitif kalau
-      // diubah karena teksturnya dipakai berulang sebagai umpan balik antar frame).
-      basicMaterial=new THREE.MeshBasicMaterial({
-        transparent:true,
-        blending:THREE.CustomBlending,
-        blendEquation:THREE.AddEquation,
-        blendSrc:THREE.OneFactor,
-        blendDst:THREE.OneMinusSrcAlphaFactor,
-        blendSrcAlpha:THREE.OneFactor,
-        blendDstAlpha:THREE.OneMinusSrcAlphaFactor
-      });
+      basicMaterial=new THREE.MeshBasicMaterial({transparent:true});
       const geo=new THREE.PlaneGeometry(2,2);
       sceneBasic.add(new THREE.Mesh(geo,basicMaterial));
       sceneShader.add(new THREE.Mesh(geo,shaderMaterial));
@@ -2904,25 +2829,12 @@ function resetAll(){
   try{const ab=document.getElementById('asmbar');if(ab)ab.style.width='0%';}catch(e){}
   try{const ap=document.getElementById('asmpct');if(ap)ap.textContent='🌸 0/20 BUNGA';}catch(e){}
   try{const wh=document.getElementById('wgl-hint');if(wh)wh.style.opacity='1';}catch(e){}
-  try{document.querySelectorAll('.tcard').forEach(c=>{c.classList.remove('flipped');c.style.opacity='';c.style.filter='';c.style.pointerEvents='';c.style.transform='';c.style.transition='';});}catch(e){}
-  try{_tarotDealing=false;}catch(e){}
-  try{document.querySelectorAll('.phopt').forEach(c=>{c.classList.remove('selected');c.style.opacity='';c.style.pointerEvents='';});}catch(e){}
-  try{document.querySelectorAll('.ph-drag-ghost').forEach(function(g){g.remove();});}catch(e){}
-  try{_phDrag=null;}catch(e){}
-  try{['phSlotF','phSlotA'].forEach(function(id){const s=document.getElementById(id);if(s){s.innerHTML='';s.classList.remove('filled');}});}catch(e){}
-  try{const jar=document.getElementById('phJar');if(jar)jar.classList.remove('ph-jar-ready','ph-jar-hover');}catch(e){}
-  try{document.querySelectorAll('.dcard').forEach(c=>c.classList.remove('selected','spotlight-active','spotlight-locked'));}catch(e){}
+  try{if(typeof initTarotStage==='function')initTarotStage();}catch(e){}
+  try{if(typeof initAuraStage==='function')initAuraStage();}catch(e){}
+  try{if(typeof initVowStage==='function')initVowStage();}catch(e){}
+  try{if(typeof initWheelStage==='function')initWheelStage();}catch(e){}
   try{document.getElementById('cflval').textContent='Esensi Bunga: —';}catch(e){}
   try{document.getElementById('canval').textContent='Esensi Hewan: —';}catch(e){}
-  try{selTarot='';}catch(e){}
-  try{const ds=document.getElementById('destinySynthesis');if(ds){ds.innerHTML='';ds.classList.remove('show');}}catch(e){}
-  try{s3ResetSwipeStack();}catch(e){}
-  try{_swipeDrag=null;}catch(e){}
-  try{ if(_spotlightInt){clearInterval(_spotlightInt);_spotlightInt=null;} _spotlightBusy=false; }catch(e){}
-  try{const sb=document.getElementById('spotlightSpinBtn');if(sb){sb.style.display='inline-flex';sb.textContent='✦ Putar Sorotan Takdir';}}catch(e){}
-  try{const stb=document.getElementById('spotlightStopBtn');if(stb)stb.style.display='none';}catch(e){}
-  try{const dg=document.getElementById('destinyGrid');if(dg)dg.style.pointerEvents='';}catch(e){}
-  try{const gf=document.querySelector('.gate-open-fx');if(gf)gf.remove();}catch(e){}
   try{const eb=document.getElementById('entbtn');if(eb){eb.style.display='none';eb.disabled=false;eb.innerHTML='<span aria-hidden="true">✦</span> Masuki Taman';}}catch(e){}
   try{const micgate=document.getElementById('mic-gate');if(micgate){micgate.style.display='flex';const mb=micgate.querySelector('button');if(mb){mb.textContent='✦ izinkan mikrofon untuk tiup lilin';mb.disabled=false;}}}catch(e){}
   // Reset stage history & UI tambahan
@@ -3017,7 +2929,6 @@ window.go = function(f, t) {
     if(_stageHistory.length>10) _stageHistory.shift();
   }
   _origGo(f, t);
-  if(t==='str') setTimeout(function(){ if(typeof tarotDealAnimation==='function') tarotDealAnimation(); }, 700);
   setTimeout(function(){ if(typeof _updateBackBtn==='function') _updateBackBtn(); }, 700);
 };
 
@@ -3435,7 +3346,10 @@ function devSkip(id){
   if(id==='s9b')setTimeout(initWebGLFlowers,900);
   if(id==='s13')setTimeout(confetti,700);
   if(id==='scd')startCD();
-  if(id==='str'){setTimeout(function(){ if(typeof tarotDealAnimation==='function') tarotDealAnimation(); },250);}
+  if(id==='str')initTarotStage();
+  if(id==='sph')initAuraStage();
+  if(id==='s3')initVowStage();
+  if(id==='s3b')initWheelStage();
   if(id==='s10'){setTimeout(function(){initCakeCanvas();var gate=document.getElementById('mic-gate');if(gate)gate.style.display='flex';},900);}
   if(id==='sphoto'){setTimeout(initPhotobooth,300);}
 }
