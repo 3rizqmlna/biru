@@ -1878,145 +1878,128 @@ function tarotDealAnimation(){
 function flipTarot(el){if(el.classList.contains('flipped'))return;if(document.querySelector('.tcard.flipped'))return;sfx('ok');el.classList.add('flipped');const r=el.getBoundingClientRect();bloom(r.left+r.width/2,r.top+r.height/2,'#F2B441');document.getElementById('ntarot').style.display='inline-flex';const shb=document.getElementById('strHintBtn');if(shb)shb.style.display='none';const shx=document.getElementById('strHintBox');if(shx)shx.style.display='none';const tfn=el.querySelector('.tfname'),th4=el.querySelector('h4');if(tfn&&th4)selTarot=tfn.textContent.trim()+' — '+th4.textContent.trim();document.querySelectorAll('.tcard').forEach(c=>{if(c!==el){c.style.opacity='.35';c.style.filter='grayscale(.6)';c.style.pointerEvents='none';c.style.transition='opacity .5s ease, filter .5s ease';}});}
 function strShowHint(){const msgs=['Sentuh salah satu dari 6 kartu di atas untuk membaliknya!','Pilih kartu manapun — ikuti intuisimu. Tidak ada jawaban yang salah.','Sentuh kartu yang paling menarik perhatianmu saat ini.'];const hb=document.getElementById('strHintBox');if(hb){hb.textContent=msgs[Math.floor(Math.random()*msgs.length)];hb.style.display='block';}setTimeout(function(){if(hb)hb.style.display='none';},3000);}
 
-// STAGE 6 — RACIK RAMUAN JIWA: drag & drop esensi bunga/hewan ke dalam toples.
-// Ketuk cepat = "quick pick" (item terbang otomatis masuk toples), seret manual = drag
-// & drop fisik. Keduanya berakhir di fungsi yang sama (phSelectItem).
-let _phDrag=null;
-function phInitDragDrop(){
-  document.querySelectorAll('#sph .phopt').forEach(function(opt){
-    if(opt._phBound) return; // hindari bind ganda tiap kali stage dibuka ulang
-    opt._phBound=true;
-    opt.addEventListener('pointerdown', phOnPointerDown);
-  });
-}
-function phOnPointerDown(e){
-  if(_phDrag) return;
-  const opt=e.currentTarget;
-  e.preventDefault();
-  const rect=opt.getBoundingClientRect();
-  const iconEl=opt.querySelector('.phico');
-  const nameEl=opt.querySelector('.phtxt h4');
-  const ghost=document.createElement('div');
-  ghost.className='ph-drag-ghost';
-  ghost.innerHTML='<div class="phico">'+(iconEl?iconEl.innerHTML:'')+'</div><div class="ph-drag-name">'+(nameEl?nameEl.textContent:'')+'</div>';
-  ghost.style.left=rect.left+'px';
-  ghost.style.top=rect.top+'px';
-  ghost.style.width=rect.width+'px';
-  document.body.appendChild(ghost);
-  requestAnimationFrame(function(){ ghost.classList.add('active'); });
-  opt.style.opacity='.32';
-  opt.style.pointerEvents='none';
-  _phDrag={ghost:ghost, opt:opt, startLeft:rect.left, startTop:rect.top, offX:e.clientX-rect.left, offY:e.clientY-rect.top, moved:false};
-  window.addEventListener('pointermove', phOnPointerMove);
-  window.addEventListener('pointerup', phOnPointerUp);
-  window.addEventListener('pointercancel', phOnPointerUp);
-}
-function phOnPointerMove(e){
-  if(!_phDrag) return;
-  e.preventDefault();
-  const d=_phDrag;
-  const nx=e.clientX-d.offX, ny=e.clientY-d.offY;
-  if(Math.abs(nx-d.startLeft)>4||Math.abs(ny-d.startTop)>4) d.moved=true;
-  d.ghost.style.transform='translate('+(nx-d.startLeft)+'px,'+(ny-d.startTop)+'px) scale(1.05) rotate(-3deg)';
-  const jar=document.getElementById('phJar');
-  if(jar){
-    const jr=jar.getBoundingClientRect();
-    const over=e.clientX>jr.left-24&&e.clientX<jr.right+24&&e.clientY>jr.top-24&&e.clientY<jr.bottom+24;
-    jar.classList.toggle('ph-jar-hover', over);
-  }
-}
-function phOnPointerUp(e){
-  if(!_phDrag) return;
-  window.removeEventListener('pointermove', phOnPointerMove);
-  window.removeEventListener('pointerup', phOnPointerUp);
-  window.removeEventListener('pointercancel', phOnPointerUp);
-  const d=_phDrag; _phDrag=null;
-  const jar=document.getElementById('phJar');
-  if(jar) jar.classList.remove('ph-jar-hover');
-  const jr=jar?jar.getBoundingClientRect():null;
-  const droppedOnJar = jr && e.clientX>jr.left-30&&e.clientX<jr.right+30&&e.clientY>jr.top-30&&e.clientY<jr.bottom+30;
-  const opt=d.opt;
-  const type=opt.id.indexOf('fl')===0 ? 'f' : 'a';
-  const value=opt.getAttribute('data-value')||'';
-  if(!d.moved || droppedOnJar){
-    // tap ringan tanpa gerak (quick pick) ATAU berhasil dilepas tepat di atas toples
-    phFlyIntoJar(d.ghost, jr, function(){ d.ghost.remove(); opt.style.opacity=''; opt.style.pointerEvents=''; });
-    phSelectItem(type, value, opt.id, opt);
-  } else {
-    d.ghost.style.transition='transform .45s cubic-bezier(.34,1.4,.4,1)';
-    d.ghost.style.transform='translate(0,0) scale(1) rotate(0deg)';
-    setTimeout(function(){ d.ghost.remove(); opt.style.opacity=''; opt.style.pointerEvents=''; },460);
-  }
-}
-function phFlyIntoJar(ghost, jarRect, cb){
-  if(!jarRect){ cb&&cb(); return; }
-  const gr=ghost.getBoundingClientRect();
-  const targetX=(jarRect.left+jarRect.width/2)-gr.width/2;
-  const targetY=(jarRect.top+jarRect.height/2)-gr.height/2;
-  const curLeft=parseFloat(ghost.style.left)||gr.left, curTop=parseFloat(ghost.style.top)||gr.top;
-  ghost.style.transition='transform .4s cubic-bezier(.3,.6,.2,1), opacity .4s ease .15s';
-  ghost.style.transform='translate('+(targetX-curLeft)+'px,'+(targetY-curTop)+'px) scale(.25) rotate(12deg)';
-  ghost.style.opacity='0';
-  setTimeout(cb, 420);
-}
-function phSelectItem(t, v, id, srcEl){
-  sfx('tr');
-  const icon=srcEl?srcEl.querySelector('.phico'):null;
-  if(t==='f'){
-    selF=v;
-    ['fl1','fl2','fl3','fl4'].forEach(function(i){ const e=document.getElementById(i); if(e) e.classList.remove('selected'); });
-    document.getElementById(id).classList.add('selected');
-    const slot=document.getElementById('phSlotF');
-    if(slot){ slot.innerHTML=icon?icon.innerHTML:''; slot.classList.add('filled'); }
-  } else {
-    selA=v;
-    ['an1','an2','an3','an4'].forEach(function(i){ const e=document.getElementById(i); if(e) e.classList.remove('selected'); });
-    document.getElementById(id).classList.add('selected');
-    const slot=document.getElementById('phSlotA');
-    if(slot){ slot.innerHTML=icon?icon.innerHTML:''; slot.classList.add('filled'); }
-  }
-  const jar=document.getElementById('phJar');
-  if(selF&&selA){
-    document.getElementById('nphilo').style.display='inline-flex';
-    if(jar){
-      jar.classList.add('ph-jar-ready');
-      const r=jar.getBoundingClientRect();
-      bloom(r.left+r.width/2, r.top+r.height/2, '#F2B441');
-    }
-  }
-}
-document.addEventListener('DOMContentLoaded', phInitDragDrop);
+// PHILO
+function pickPhilo(t,v,id){sfx('tr');if(t==='f'){selF=v;['fl1','fl2','fl3','fl4'].forEach(i=>document.getElementById(i).classList.remove('selected'));}else{selA=v;['an1','an2','an3','an4'].forEach(i=>document.getElementById(i).classList.remove('selected'));}document.getElementById(id).classList.add('selected');if(selF&&selA)document.getElementById('nphilo').style.display='inline-flex';}
 function confirmPhilo(){sfx('ok');document.getElementById('cflval').textContent='Esensi Bunga: '+selF;document.getElementById('canval').textContent='Esensi Hewan: '+selA;go('sph','s3');}
 
 // STAGE 7 — LABIRIN MENUJU TAMAN: navigasi grid dengan WASD/tombol panah menuju
 // gerbang taman. Tiga lorong paralel masing-masing menyimpan satu kristal takdir
 // (gelar spiritualitas) — pemain memilih SATU lorong, kristal itu otomatis terkunci
 // sebagai gelarnya (lewat pickDest), lalu ketiga lorong menyatu ke gerbang keluar.
-const MAZE_MAP=[
-"###########",
-"#####S#####",
-"#####.#####",
-"##.......##",
-"##.##.##.##",
-"##1##2##3##",
-"##.##.##.##",
-"##.......##",
-"#####.#####",
-"#####E#####",
-"###########"
-];
+// STAGE 7 — LABIRIN MENUJU TAMAN: labirin ACAK & lebih besar, dibangkitkan lewat
+// algoritma "recursive backtracker" (DFS) — hasilnya "perfect maze" (satu-satunya
+// jalur antar dua titik manapun) yang secara alami penuh jalan buntu. Tiga kristal
+// takdir (gelar spiritualitas) ditaruh di tiga jalan buntu berbeda yang berjauhan;
+// menemukan salah satu mengunci gelarnya (lewat pickDest) dan membuka gerbang keluar.
+const MAZE_W=9, MAZE_H=9; // ukuran labirin dalam "ruang" (bukan sel grid) — makin besar dari sebelumnya
 const MAZE_CRYSTAL_TITLES={'1':'The Moonlit Gardener','2':'The Botanical Dreamer','3':'The Wildflower Sovereign'};
-let mazePos={r:1,c:5}, mazeCollected=null, mazeBusy=false, mazeCellPx=32;
+let MAZE_GRID=null, MAZE_ROWS=0, MAZE_COLS=0;
+let mazePos={r:1,c:1}, mazeCollected=null, mazeBusy=false, mazeCellPx=24;
+
+function mazeGenerate(W,H){
+  const rows=2*H+1, cols=2*W+1;
+  const g=[];
+  for(let r=0;r<rows;r++) g.push(new Array(cols).fill('#'));
+  const visited=[];
+  for(let y=0;y<H;y++) visited.push(new Array(W).fill(false));
+  visited[0][0]=true;
+  g[1][1]='.';
+  const stack=[[0,0]];
+  while(stack.length){
+    const cur=stack[stack.length-1];
+    const cx=cur[0], cy=cur[1];
+    const dirs=[[0,-1],[0,1],[-1,0],[1,0]];
+    for(let i=dirs.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=dirs[i]; dirs[i]=dirs[j]; dirs[j]=t; }
+    let moved=false;
+    for(let i=0;i<dirs.length;i++){
+      const dx=dirs[i][0], dy=dirs[i][1];
+      const nx=cx+dx, ny=cy+dy;
+      if(nx>=0&&ny>=0&&nx<W&&ny<H&&!visited[ny][nx]){
+        visited[ny][nx]=true;
+        g[2*cy+1+dy][2*cx+1+dx]='.';
+        g[2*ny+1][2*nx+1]='.';
+        stack.push([nx,ny]);
+        moved=true;
+        break;
+      }
+    }
+    if(!moved) stack.pop();
+  }
+  return {g:g, rows:rows, cols:cols};
+}
+function mazeRoomDegree(g,cx,cy){
+  const rx=2*cx+1, ry=2*cy+1;
+  let d=0;
+  if(g[ry-1][rx]==='.') d++;
+  if(g[ry+1][rx]==='.') d++;
+  if(g[ry][rx-1]==='.') d++;
+  if(g[ry][rx+1]==='.') d++;
+  return d;
+}
+function mazeFindLeaves(g,W,H,excludeSet){
+  const leaves=[];
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      if(excludeSet.has(x+','+y)) continue;
+      if(mazeRoomDegree(g,x,y)===1) leaves.push([x,y]);
+    }
+  }
+  return leaves;
+}
+function mazePickCrystalRooms(leaves,W,H){
+  const arr=leaves.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  const chosen=[];
+  const minDist=Math.max(2,Math.floor(Math.min(W,H)/3));
+  for(let i=0;i<arr.length && chosen.length<3;i++){
+    const room=arr[i];
+    let ok=true;
+    for(let k=0;k<chosen.length;k++){
+      const dx=room[0]-chosen[k][0], dy=room[1]-chosen[k][1];
+      if(Math.sqrt(dx*dx+dy*dy)<minDist){ ok=false; break; }
+    }
+    if(ok) chosen.push(room);
+  }
+  if(chosen.length<3){
+    for(let i=0;i<arr.length && chosen.length<3;i++){
+      const room=arr[i];
+      const dup=chosen.some(function(c){ return c[0]===room[0]&&c[1]===room[1]; });
+      if(!dup) chosen.push(room);
+    }
+  }
+  return chosen;
+}
 function mazeBuild(){
+  const gen=mazeGenerate(MAZE_W,MAZE_H);
+  const g=gen.g;
+  const exclude=new Set(['0,0',(MAZE_W-1)+','+(MAZE_H-1)]);
+  const leaves=mazeFindLeaves(g,MAZE_W,MAZE_H,exclude);
+  const crystalRooms=mazePickCrystalRooms(leaves,MAZE_W,MAZE_H);
+  crystalRooms.forEach(function(room,i){
+    g[2*room[1]+1][2*room[0]+1]=String(i+1);
+  });
+  const startR=1, startC=1;
+  const exitR=2*(MAZE_H-1)+1, exitC=2*(MAZE_W-1)+1;
+  g[startR][startC]='S';
+  g[exitR][exitC]='E';
+  MAZE_GRID=g; MAZE_ROWS=gen.rows; MAZE_COLS=gen.cols;
+  mazePos={r:startR,c:startC};
+  mazeCollected=null;
+  mazeBusy=false;
+  mazeRenderGrid();
+  mazeUpdatePlayerPos(true);
+  const hint=document.getElementById('mazeCollectedHint');
+  if(hint) hint.textContent='';
+}
+function mazeRenderGrid(){
   const grid=document.getElementById('mazeGrid');
-  if(!grid) return;
+  if(!grid||!MAZE_GRID) return;
   grid.innerHTML='';
-  const rows=MAZE_MAP.length, cols=MAZE_MAP[0].length;
-  grid.style.gridTemplateColumns='repeat('+cols+', var(--maze-cell))';
-  grid.style.gridTemplateRows='repeat('+rows+', var(--maze-cell))';
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const ch=MAZE_MAP[r][c];
+  grid.style.gridTemplateColumns='repeat('+MAZE_COLS+', var(--maze-cell))';
+  grid.style.gridTemplateRows='repeat('+MAZE_ROWS+', var(--maze-cell))';
+  for(let r=0;r<MAZE_ROWS;r++){
+    for(let c=0;c<MAZE_COLS;c++){
+      const ch=MAZE_GRID[r][c];
       const cell=document.createElement('div');
       cell.className='maze-cell';
       if(ch==='#') cell.classList.add('maze-wall');
@@ -2026,16 +2009,10 @@ function mazeBuild(){
       grid.appendChild(cell);
     }
   }
-  mazePos={r:1,c:5};
-  mazeCollected=null;
-  mazeBusy=false;
-  mazeUpdatePlayerPos(true);
-  const hint=document.getElementById('mazeCollectedHint');
-  if(hint) hint.textContent='';
 }
 function mazeCellAt(r,c){
-  if(r<0||c<0||r>=MAZE_MAP.length||c>=MAZE_MAP[0].length) return '#';
-  return MAZE_MAP[r][c];
+  if(!MAZE_GRID||r<0||c<0||r>=MAZE_ROWS||c>=MAZE_COLS) return '#';
+  return MAZE_GRID[r][c];
 }
 function mazeUpdatePlayerPos(instant){
   const player=document.getElementById('mazePlayer');
@@ -2170,86 +2147,75 @@ function pickDest(t){
   }
 }
 
-// STAGE 8 — AMBANG TAMAN: slider kesiapan 0-100% yang bisa diseret (mouse/touch)
-// atau digeser via keyboard (panah kiri/kanan saat fokus). Begitu mencapai 100%,
-// gerbang bercahaya terbuka dan tombol "Masuki Taman" muncul untuk lanjut ke
-// animasi taman (sci).
-let _readyDrag=false, _readyValue=0, _readyDone=false;
-function readySetValue(pct){
-  pct=Math.max(0,Math.min(100,pct));
-  _readyValue=pct;
-  const fill=document.getElementById('readyFill');
-  const knob=document.getElementById('readyKnob');
-  const label=document.getElementById('readyLabel');
-  if(fill) fill.style.width=pct+'%';
-  if(knob){ knob.style.left=pct+'%'; knob.setAttribute('aria-valuenow', String(Math.round(pct))); }
-  if(label) label.textContent=Math.round(pct)+'%';
-  if(pct>=99.5 && !_readyDone){ _readyDone=true; readyComplete(); }
-  else if(pct<99.5 && _readyDone){ _readyDone=false; }
-}
-function readySetFromClientX(clientX){
-  const track=document.getElementById('readyTrack');
-  if(!track) return;
-  const r=track.getBoundingClientRect();
-  readySetValue(((clientX-r.left)/r.width)*100);
-}
-function readyOnDown(e){
-  e.preventDefault();
-  const knob=document.getElementById('readyKnob');
-  if(knob && knob.setPointerCapture){ try{ knob.setPointerCapture(e.pointerId); }catch(err){} }
-  _readyDrag=true;
-  window.addEventListener('pointermove', readyOnMove);
-  window.addEventListener('pointerup', readyOnUp);
-}
-function readyOnMove(e){ if(_readyDrag) readySetFromClientX(e.clientX); }
-function readyOnUp(){
-  _readyDrag=false;
-  window.removeEventListener('pointermove', readyOnMove);
-  window.removeEventListener('pointerup', readyOnUp);
-}
-function readyComplete(){
-  sfx('win');
-  if(navigator.vibrate) navigator.vibrate([50,30,90,30,140]);
-  const track=document.getElementById('readyTrack');
-  if(track){
-    track.classList.add('ready-complete');
-    const r=track.getBoundingClientRect();
-    bloom(r.left+r.width, r.top+r.height/2, '#F2B441');
+// STAGE 8 — AMBANG TAMAN: toggle interaktif berupa wajah SVG yang berganti antara
+// tiga perasaan (sedih → penasaran → senang). Tiap ketukan mengganti wajah &
+// membuka kalimat baru. Begitu ketiga perasaan pernah dilihat, gerbang bercahaya
+// terbuka dan tombol "Masuki Taman" muncul untuk lanjut ke animasi taman (sci).
+const MOOD_STATES=[
+  { key:'sad', color:'#8FCBEA',
+    svg:'<svg viewBox="0 0 64 64" width="72" height="72" fill="none"><circle cx="32" cy="32" r="28" fill="rgba(95,174,219,.12)" stroke="rgba(95,174,219,.55)" stroke-width="2"/><circle cx="23" cy="27" r="2.6" fill="#8FCBEA"/><circle cx="41" cy="27" r="2.6" fill="#8FCBEA"/><path d="M21 44 Q32 36 43 44" stroke="#8FCBEA" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M22 31 q2 6 -1 10" stroke="#8FCBEA" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".8"/></svg>',
+    text:'Ada haru yang menetes, mengenang setiap langkah berat yang sudah kau lalui.' },
+  { key:'curious', color:'#F6CB7A',
+    svg:'<svg viewBox="0 0 64 64" width="72" height="72" fill="none"><circle cx="32" cy="32" r="28" fill="rgba(242,180,65,.12)" stroke="rgba(242,180,65,.55)" stroke-width="2"/><circle cx="23" cy="28" r="2.6" fill="#F6CB7A"/><circle cx="41" cy="26" r="2.6" fill="#F6CB7A"/><path d="M17 23 q6 -7 12 -2" stroke="#F6CB7A" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M24 42 Q32 47 40 40" stroke="#F6CB7A" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>',
+    text:'Tapi ada rasa penasaran yang menarikmu — apa yang menantimu di balik gerbang ini?' },
+  { key:'happy', color:'#B2CEA6',
+    svg:'<svg viewBox="0 0 64 64" width="72" height="72" fill="none"><circle cx="32" cy="32" r="28" fill="rgba(127,174,106,.14)" stroke="rgba(127,174,106,.6)" stroke-width="2"/><path d="M20 26 q3 -4 6 0" stroke="#B2CEA6" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M38 26 q3 -4 6 0" stroke="#B2CEA6" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M19 37 Q32 52 45 37" stroke="#B2CEA6" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>',
+    text:'Dan kini, kebahagiaan menyambutmu. Taman itu sudah menunggu untuk mekar bersamamu ✦' }
+];
+let moodIdx=0, moodSeen=null, moodDone=false;
+function moodRender(){
+  const state=MOOD_STATES[moodIdx];
+  const face=document.getElementById('moodFace');
+  if(face) face.innerHTML=state.svg;
+  const sentence=document.getElementById('moodSentence');
+  if(sentence){
+    sentence.style.opacity='0';
+    setTimeout(function(){ sentence.textContent=state.text; sentence.style.opacity='1'; sentence.style.color=state.color; },220);
   }
+  document.querySelectorAll('#moodDots .mood-dot').forEach(function(d,i){
+    d.classList.toggle('active', i===moodIdx);
+    d.classList.toggle('seen', moodSeen.has(i));
+  });
+  moodSeen.add(moodIdx);
+  if(moodSeen.size>=MOOD_STATES.length && !moodDone) moodComplete();
+}
+function moodToggle(){
+  sfx('tr');
+  moodIdx=(moodIdx+1)%MOOD_STATES.length;
+  moodRender();
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+function moodComplete(){
+  moodDone=true;
+  sfx('win');
   gateOpenFX();
+  if(navigator.vibrate) navigator.vibrate([50,30,90]);
+  const wrap=document.querySelector('#s3b .mood-toggle-wrap');
+  if(wrap){ const r=wrap.getBoundingClientRect(); bloom(r.left+r.width/2, r.top+r.height/2, '#F2B441'); }
   const btn=document.getElementById('npath');
   if(btn) btn.style.display='inline-flex';
 }
-function readyReset(){
-  _readyValue=0; _readyDone=false; _readyDrag=false;
-  readySetValue(0);
-  const track=document.getElementById('readyTrack');
-  if(track) track.classList.remove('ready-complete');
+function moodReset(){
+  moodIdx=0; moodSeen=new Set(); moodDone=false;
+  moodRender();
   const btn=document.getElementById('npath');
   if(btn) btn.style.display='none';
 }
-function readyInit(){
-  const knob=document.getElementById('readyKnob');
-  const track=document.getElementById('readyTrack');
-  if(knob && !knob._rBound){
-    knob._rBound=true;
-    knob.addEventListener('pointerdown', readyOnDown);
-    knob.addEventListener('keydown', function(e){
-      if(e.key==='ArrowRight'||e.key==='ArrowUp'){ e.preventDefault(); readySetValue(_readyValue+5); }
-      else if(e.key==='ArrowLeft'||e.key==='ArrowDown'){ e.preventDefault(); readySetValue(_readyValue-5); }
-      else if(e.key==='Home'){ e.preventDefault(); readySetValue(0); }
-      else if(e.key==='End'){ e.preventDefault(); readySetValue(100); }
-    });
+function moodInit(){
+  if(!moodSeen) moodSeen=new Set();
+  const btn=document.getElementById('moodToggleBtn');
+  if(btn && !btn._mBound){
+    btn._mBound=true;
+    btn.addEventListener('click', moodToggle);
   }
-  if(track && !track._rBound){
-    track._rBound=true;
-    track.addEventListener('pointerdown', function(e){
-      if(e.target===knob) return;
-      readySetFromClientX(e.clientX);
-    });
-  }
+  document.querySelectorAll('#moodDots .mood-dot').forEach(function(dot,i){
+    if(dot._mBound) return;
+    dot._mBound=true;
+    dot.addEventListener('click', function(){ moodIdx=i; moodRender(); try{sfx('tr');}catch(e){} });
+  });
+  moodRender();
 }
-document.addEventListener('DOMContentLoaded', readyInit);
+document.addEventListener('DOMContentLoaded', moodInit);
 
 // CINEMATIC
 const PTXTS=["Dua puluh tahun bukanlah sekadar angka —\nitu adalah ribuan pagi yang kamu pilih untuk bangkit.","Setiap versi dirimu yang pernah ada\ntelah membawa kamu ke titik yang tepat ini.","Dan kamu, Naffa,\nadalah karya paling nyata yang pernah semesta ciptakan."];
@@ -2939,11 +2905,7 @@ function resetAll(){
   try{const wh=document.getElementById('wgl-hint');if(wh)wh.style.opacity='1';}catch(e){}
   try{document.querySelectorAll('.tcard').forEach(c=>{c.classList.remove('flipped');c.style.opacity='';c.style.filter='';c.style.pointerEvents='';c.style.transform='';c.style.transition='';});}catch(e){}
   try{_tarotDealing=false;}catch(e){}
-  try{document.querySelectorAll('.phopt').forEach(c=>{c.classList.remove('selected');c.style.opacity='';c.style.pointerEvents='';});}catch(e){}
-  try{document.querySelectorAll('.ph-drag-ghost').forEach(function(g){g.remove();});}catch(e){}
-  try{_phDrag=null;}catch(e){}
-  try{['phSlotF','phSlotA'].forEach(function(id){const s=document.getElementById(id);if(s){s.innerHTML='';s.classList.remove('filled');}});}catch(e){}
-  try{const jar=document.getElementById('phJar');if(jar)jar.classList.remove('ph-jar-ready','ph-jar-hover');}catch(e){}
+  try{document.querySelectorAll('.phopt').forEach(c=>c.classList.remove('selected'));}catch(e){}
   try{document.getElementById('cflval').textContent='Esensi Bunga: —';}catch(e){}
   try{document.getElementById('canval').textContent='Esensi Hewan: —';}catch(e){}
   try{selTarot='';selD='The Wildflower Sovereign';}catch(e){}
@@ -2951,7 +2913,7 @@ function resetAll(){
   try{const db=document.getElementById('dynbadge');if(db)db.textContent='The Wildflower Sovereign';}catch(e){}
   try{const ds=document.getElementById('destinySynthesis');if(ds){ds.innerHTML='';ds.classList.remove('show');}}catch(e){}
   try{mazeBuild();}catch(e){}
-  try{readyReset();}catch(e){}
+  try{moodReset();}catch(e){}
   try{const gf=document.querySelector('.gate-open-fx');if(gf)gf.remove();}catch(e){}
   try{const eb=document.getElementById('entbtn');if(eb){eb.style.display='none';eb.disabled=false;eb.innerHTML='<span aria-hidden="true">✦</span> Masuki Taman';}}catch(e){}
   try{const micgate=document.getElementById('mic-gate');if(micgate){micgate.style.display='flex';const mb=micgate.querySelector('button');if(mb){mb.textContent='✦ izinkan mikrofon untuk tiup lilin';mb.disabled=false;}}}catch(e){}
